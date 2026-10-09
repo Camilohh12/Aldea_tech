@@ -2,24 +2,37 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Crear Roles de Spatie
+        $superAdmin = Role::create(['name' => 'super_admin']);
+        $admin      = Role::create(['name' => 'admin']);
+        $tutor      = Role::create(['name' => 'tutor']);
+        $docente    = Role::create(['name' => 'docente']);
+        $alumno     = Role::create(['name' => 'alumno']);
+        $ponente    = Role::create(['name' => 'ponente']);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Crear usuario Administrador por defecto
+        $adminUser = User::create([
+            'name'     => 'Administrador Aldea',
+            'email'    => 'admin@aldea.edu.mx',
+            'password' => Hash::make('password123'),
+        ]);
+        $adminUser->assignRole($admin);
+
+        // Crear tipos de actividad iniciales
+        \DB::table('activity_types')->insert([
+            ['name' => 'Conferencia', 'description' => 'Charla magistral'],
+            ['name' => 'Taller', 'description' => 'Práctica estructurada'],
+            ['name' => 'Curso', 'description' => 'Capacitación extendida'],
+            ['name' => 'Foro', 'description' => 'Panel de discusión'],
         ]);
     }
 }

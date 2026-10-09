@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('matricula')->nullable()->unique();
+            $table->string('carrera')->nullable();
+            $table->string('cuatrimestre')->nullable();
+            $table->enum('estatus', ['regular', 'irregular'])->default('regular');
+            $table->foreignId('tutor_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
