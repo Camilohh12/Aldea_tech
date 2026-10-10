@@ -12,7 +12,24 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Manrope', 'Figtree', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                // Morado institucional UPP (tomado del escudo)
+                aldea: {
+                    50: '#f6f2fa',
+                    100: '#ece4f5',
+                    200: '#d7c8ea',
+                    300: '#b49bd6',
+                    400: '#8a66bb',
+                    500: '#6a3fa3',
+                    600: '#5a2d93',
+                    700: '#4a1f80',
+                    800: '#3b1270',
+                    900: '#26093f',
+                },
+                tinta: '#1b1530', // texto principal (casi negro azulado)
+                lavanda: '#fbf8ff', // fondo general
             },
         },
     },
