@@ -12,13 +12,13 @@
          'icon' => 'M8 2v3m8-3v3M3.5 9h17M5 4.5h14A1.5 1.5 0 0120.5 6v13.5A1.5 1.5 0 0119 21H5a1.5 1.5 0 01-1.5-1.5V6A1.5 1.5 0 015 4.5zM7.5 13h9M7.5 16.5h6'],
         ['route' => 'alumno.agenda', 'label' => 'Mi Agenda', 'badge' => $agendaCount ?: null,
          'icon' => 'M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-        ['route' => 'alumno.escaner', 'label' => 'Escanear', 'badge' => null,
+        ['route' => 'alumno.pases', 'label' => 'Mis pases', 'badge' => null,
          'icon' => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2zM6.5 6.5h1v1h-1zM16.5 6.5h1v1h-1zM6.5 16.5h1v1h-1z'],
     ];
 @endphp
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="es-MX" translate="no">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -72,12 +72,19 @@
     <main @class(['mx-auto px-4 pb-32 pt-4', 'max-w-5xl' => $wide, 'max-w-xl' => ! $wide])>
         {{-- Mensaje de éxito --}}
         @if (session('success'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 6000)"
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 9000)"
                  class="mb-4 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4" role="status">
                 <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </span>
-                <p class="pt-1.5 text-sm font-semibold text-emerald-800">{{ session('success') }}</p>
+                <div class="min-w-0 flex-1 pt-1.5">
+                    <p class="text-sm font-semibold text-emerald-800">{{ session('success') }}</p>
+                    @if (session('success_link'))
+                        <a href="{{ session('success_link')['url'] }}" class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-800">
+                            <x-icono name="qr" class="h-4 w-4" /> {{ session('success_link')['label'] }}
+                        </a>
+                    @endif
+                </div>
             </div>
         @endif
 

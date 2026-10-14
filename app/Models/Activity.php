@@ -23,10 +23,7 @@ class Activity extends Model
         'start_time',
         'end_time',
         'checkin_enabled',
-        'checkin_token',
     ];
-
-    protected $hidden = ['checkin_token'];
 
     protected function casts(): array
     {
@@ -37,13 +34,6 @@ class Activity extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
-        // Cada actividad nace con su propio código para el QR de asistencia.
-        static::creating(function (Activity $activity) {
-            $activity->checkin_token ??= Str::random(40);
-        });
-    }
 
     // ---------------------------------------------------------------- Relaciones
 
@@ -201,7 +191,7 @@ class Activity extends Model
         return $start && $end ? (int) $start->diffInMinutes($end) : 0;
     }
 
-    /** Datos públicos para mostrar en el escáner (nunca incluye el token). */
+    /** Datos públicos de la actividad para respuestas JSON. */
     public function summary(): array
     {
         return [

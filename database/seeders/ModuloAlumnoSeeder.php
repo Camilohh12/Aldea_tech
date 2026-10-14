@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Activity;
 use App\Models\ActivityType;
+use App\Models\Enrollment;
 use App\Models\Room;
 use App\Models\Speaker;
 use App\Models\User;
@@ -77,11 +78,31 @@ class ModuloAlumnoSeeder extends Seeder
             ]);
         }
 
-        $this->command?->info('Alumno de prueba: alumno@aldea.edu.mx / password123');
-        $this->command?->table(
-            ['Actividad', 'Código para el QR (checkin_token)'],
-            Activity::orderBy('date')->orderBy('start_time')->get()
-                ->map(fn ($a) => [$a->title, $a->checkin_token])->all(),
+        // Tutor que pasa lista
+        $tutor = User::firstOrCreate(
+            ['email' => 'tutor@aldea.edu.mx'],
+            ['name' => 'Mtra. Laura Gómez', 'password' => Hash::make('password123'), 'email_verified_at' => now()],
         );
+        $tutor->assignRole(Role::firstOrCreate(['name' => 'tutor']));
+
+        // Compañeros inscritos al taller, para que la lista del tutor no esté vacía
+        $taller = Activity::where('title', 'Taller de Ciberseguridad Defensiva en Nube')->first();
+        $companeros = [
+            ['Diego Hernández Ruiz', '202308117'],
+            ['Mariana López Castillo', '202308255'],
+            ['José Ángel Ramírez Soto', '202308301'],
+        ];
+        foreach ($companeros as $i => [$nombre, $matricula]) {
+            $u = User::firstOrCreate(
+                ['email' => "alumno{$i}@aldea.edu.mx"],
+                ['name' => $nombre, 'password' => Hash::make('password123'), 'matricula' => $matricula,
+                    'carrera' => 'Ing. en Software', 'email_verified_at' => now()],
+            );
+            $u->assignRole($rolAlumno);
+            Enrollment::firstOrCreate(['user_id' => $u->id, 'activity_id' => $taller->id]);
+        }
+
+        $this->command?->info('Alumno: alumno@aldea.edu.mx / password123');
+        $this->command?->info('Tutor:  tutor@aldea.edu.mx / password123');
     }
 }

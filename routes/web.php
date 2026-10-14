@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Alumno\AgendaController;
-use App\Http\Controllers\Alumno\AsistenciaController;
 use App\Http\Controllers\Alumno\CatalogoController;
 use App\Http\Controllers\Alumno\InscripcionController;
+use App\Http\Controllers\Alumno\PasesController;
+use App\Http\Controllers\PaseLista\PaseListaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,9 +13,13 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    // El alumno entra directo a su módulo.
+    // Cada rol entra directo a su módulo.
     if (auth()->user()->hasRole('alumno')) {
         return redirect()->route('alumno.catalogo');
+    }
+
+    if (auth()->user()->hasAnyRole(['tutor', 'docente', 'ponente'])) {
+        return redirect()->route('pase-lista.index');
     }
 
     return view('dashboard');
@@ -37,9 +42,21 @@ Route::middleware(['auth', 'role:alumno'])
 
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
 
-        Route::get('/escaner', [AsistenciaController::class, 'escaner'])->name('escaner');
-        Route::post('/asistencias', [AsistenciaController::class, 'store'])->name('asistencias.store');
-        Route::post('/asistencias/sync', [AsistenciaController::class, 'sync'])->name('asistencias.sync');
+        Route::get('/pases', [PasesController::class, 'index'])->name('pases');
+    });
+
+// Pase de lista: el tutor/ponente escanea el QR de cada alumno
+Route::middleware(['auth', 'role:tutor|docente|ponente|admin|super_admin'])
+    ->prefix('pase-lista')
+    ->name('pase-lista.')
+    ->group(function () {
+        Route::get('/', [PaseListaController::class, 'index'])->name('index');
+        Route::get('/{activity}', [PaseListaController::class, 'show'])->name('show');
+        Route::post('/{activity}/estado', [PaseListaController::class, 'toggle'])->name('toggle');
+        Route::post('/{activity}/asistencias', [PaseListaController::class, 'store'])->name('store');
+        Route::post('/{activity}/asistencias/sync', [PaseListaController::class, 'sync'])->name('sync');
+        Route::post('/{activity}/manual/{enrollment}', [PaseListaController::class, 'manual'])
+            ->whereNumber('enrollment')->name('manual');
     });
 
 require __DIR__.'/auth.php';

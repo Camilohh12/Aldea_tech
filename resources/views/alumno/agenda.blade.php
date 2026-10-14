@@ -135,23 +135,25 @@
                                         <p class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
                                             <x-icono name="check" class="h-4 w-4" /> Asistencia registrada · {{ $enrollment->checkin_time?->format('H:i') }} hrs
                                         </p>
-                                    @elseif ($enCurso || ($activity->checkin_enabled && ! $termino))
-                                        <a href="{{ route('alumno.escaner') }}" class="mt-3 flex items-center justify-between rounded-lg bg-aldea-50 px-3 py-2.5 text-sm font-semibold text-aldea-900 hover:bg-aldea-100">
-                                            <span class="flex items-center gap-2"><x-icono name="qr" class="h-4 w-4" /> Escanear asistencia en aula</span>
+                                    @elseif (! $termino)
+                                        <a href="{{ route('alumno.pases') }}#pase-{{ $enrollment->id }}" class="mt-3 flex items-center justify-between rounded-lg bg-aldea-50 px-3 py-2.5 text-sm font-semibold text-aldea-900 hover:bg-aldea-100">
+                                            <span class="flex items-center gap-2"><x-icono name="qr" class="h-4 w-4" /> Mostrar mi pase QR</span>
                                             <x-icono name="flecha" class="h-4 w-4" />
                                         </a>
-                                    @elseif (! $activity->hasStarted())
-                                        <div class="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
-                                            <span class="flex items-center gap-1"><x-icono name="reloj-arena" class="h-3.5 w-3.5" /> Tolerancia 15 min</span>
-                                            <form method="POST" action="{{ route('alumno.inscripcion.destroy', $activity) }}"
-                                                  onsubmit="return confirm('¿Cancelar tu lugar en esta actividad? Otro alumno podrá tomarlo.')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="flex items-center gap-1 font-medium hover:text-red-600">
-                                                    <x-icono name="prohibido" class="h-3.5 w-3.5" /> Cancelar inscripción
-                                                </button>
-                                            </form>
-                                        </div>
+
+                                        @unless ($activity->hasStarted())
+                                            <div class="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                                                <span class="flex items-center gap-1"><x-icono name="reloj-arena" class="h-3.5 w-3.5" /> Tolerancia 15 min</span>
+                                                <form method="POST" action="{{ route('alumno.inscripcion.destroy', $activity) }}"
+                                                      onsubmit="return confirm('¿Cancelar tu lugar en esta actividad? Otro alumno podrá tomarlo y tu pase QR dejará de servir.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="flex items-center gap-1 font-medium hover:text-red-600">
+                                                        <x-icono name="prohibido" class="h-3.5 w-3.5" /> Cancelar inscripción
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endunless
                                     @endif
                                 </article>
                             </li>
@@ -165,8 +167,8 @@
     @if ($tieneActividadHoy)
         <x-slot name="floating">
             <div class="pointer-events-none fixed inset-x-0 bottom-20 z-20 flex justify-center px-4" style="margin-bottom: env(safe-area-inset-bottom)">
-                <a href="{{ route('alumno.escaner') }}" class="pointer-events-auto flex items-center gap-2 rounded-2xl bg-aldea-800 px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-aldea-900/30 hover:bg-aldea-700">
-                    <x-icono name="qr" class="h-5 w-5" /> Escanear asistencia de hoy
+                <a href="{{ route('alumno.pases') }}" class="pointer-events-auto flex items-center gap-2 rounded-2xl bg-aldea-800 px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-aldea-900/30 hover:bg-aldea-700">
+                    <x-icono name="qr" class="h-5 w-5" /> Mostrar mi pase de hoy
                 </a>
             </div>
         </x-slot>

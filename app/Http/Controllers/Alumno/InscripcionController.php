@@ -23,7 +23,9 @@ class InscripcionController extends Controller
             return back()->with('error', $e->getMessage())->with('error_title', $e->title());
         }
 
-        return back()->with('success', "¡Listo! Te inscribiste a «{$activity->title}».");
+        return back()
+            ->with('success', "¡Listo! Te inscribiste a «{$activity->title}». Tu pase QR ya está en «Mis pases».")
+            ->with('success_link', ['url' => route('alumno.pases'), 'label' => 'Ver mi pase']);
     }
 
     public function destroy(Request $request, Activity $activity): RedirectResponse
