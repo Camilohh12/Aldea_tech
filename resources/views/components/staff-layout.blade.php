@@ -1,11 +1,21 @@
 @props([
     'title' => 'Pase de lista',
+    'section' => 'Pase de lista',
     'back' => null,
 ])
 
 @php
     $user = auth()->user();
     $rol = \Illuminate\Support\Str::ucfirst($user->getRoleNames()->first() ?? 'Personal');
+
+    // Pestañas según el rol
+    $tabs = [];
+    if ($user->hasAnyRole(['tutor', 'docente', 'ponente', 'admin', 'super_admin'])) {
+        $tabs[] = ['route' => 'pase-lista.index', 'match' => 'pase-lista.*', 'label' => 'Pase de lista'];
+    }
+    if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        $tabs[] = ['route' => 'admin.constancias', 'match' => 'admin.constancias*', 'label' => 'Constancias de ponentes'];
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -40,7 +50,7 @@
                         <span class="rounded-full bg-aldea-100 px-2 py-0.5 text-[11px] font-bold text-aldea-700">UPP</span>
                     </p>
                     <p class="truncate text-[13px] font-medium text-slate-700">{{ $user->name }}</p>
-                    <p class="truncate text-xs font-semibold text-aldea-600">{{ $rol }} • Pase de lista</p>
+                    <p class="truncate text-xs font-semibold text-aldea-600">{{ $rol }} • {{ $section }}</p>
                 </div>
             </div>
 
@@ -51,7 +61,6 @@
                 </button>
                 <div x-show="open" x-cloak x-transition.origin.top.right
                      class="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-aldea-100 bg-white py-1 text-sm shadow-lg">
-                    <a href="{{ route('pase-lista.index') }}" class="block px-4 py-2 font-medium text-slate-700 hover:bg-aldea-50">Actividades</a>
                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 font-medium text-slate-700 hover:bg-aldea-50">Mi perfil</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -60,6 +69,18 @@
                 </div>
             </div>
         </div>
+        @if (count($tabs) > 1)
+            <nav class="mx-auto flex max-w-xl gap-1 px-4 pb-2">
+                @foreach ($tabs as $tab)
+                    @php $activo = request()->routeIs($tab['match']); @endphp
+                    <a href="{{ route($tab['route']) }}" @class([
+                        'rounded-full px-4 py-1.5 text-sm font-semibold transition',
+                        'bg-aldea-800 text-white' => $activo,
+                        'text-slate-600 hover:bg-aldea-50' => ! $activo,
+                    ])>{{ $tab['label'] }}</a>
+                @endforeach
+            </nav>
+        @endif
     </header>
 
     <main class="mx-auto max-w-xl px-4 pb-16 pt-4">

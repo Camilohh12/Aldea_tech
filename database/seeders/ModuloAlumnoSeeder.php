@@ -28,7 +28,7 @@ class ModuloAlumnoSeeder extends Seeder
                 'name' => 'Valeria Martínez Solís',
                 'password' => Hash::make('password123'),
                 'matricula' => '202308492',
-                'carrera' => 'Ing. en Software',
+                'carrera' => 'Ingeniería en Software',
                 'cuatrimestre' => '7',
                 'email_verified_at' => now(),
             ],
@@ -96,13 +96,31 @@ class ModuloAlumnoSeeder extends Seeder
             $u = User::firstOrCreate(
                 ['email' => "alumno{$i}@aldea.edu.mx"],
                 ['name' => $nombre, 'password' => Hash::make('password123'), 'matricula' => $matricula,
-                    'carrera' => 'Ing. en Software', 'email_verified_at' => now()],
+                    'carrera' => 'Ingeniería en Software', 'email_verified_at' => now()],
             );
             $u->assignRole($rolAlumno);
             Enrollment::firstOrCreate(['user_id' => $u->id, 'activity_id' => $taller->id]);
         }
 
+        // Actividad ya realizada (pre-evento) para probar la constancia del ponente
+        $previa = Activity::updateOrCreate(['title' => 'Pre-evento: Introducción a la Seguridad en la Nube'], [
+            'description' => 'Charla previa al evento para alumnos de nuevo ingreso.',
+            'activity_type_id' => $tipos['Conferencia'] ?? null,
+            'room_id' => $aulas['Auditorio Principal']->id,
+            'speaker_id' => $ponentes['Mtro. Carlos Méndez']->id,
+            'date' => now()->subDays(7)->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '11:30',
+        ]);
+        foreach (User::role('alumno')->where('email', '!=', 'alumno@aldea.edu.mx')->get() as $u) {
+            Enrollment::firstOrCreate(
+                ['user_id' => $u->id, 'activity_id' => $previa->id],
+                ['attended' => true, 'checkin_time' => $previa->date->copy()->setTime(10, 5)],
+            );
+        }
+
         $this->command?->info('Alumno: alumno@aldea.edu.mx / password123');
         $this->command?->info('Tutor:  tutor@aldea.edu.mx / password123');
+        $this->command?->info('Admin:  admin@aldea.edu.mx / password123');
     }
 }

@@ -202,6 +202,17 @@ class Activity extends Model
         ];
     }
 
+    /**
+     * Folio de la constancia del ponente, p. ej. AT26-P-00004-9F3A1C.
+     * El sufijo se firma con APP_KEY para que no se pueda inventar un folio válido.
+     */
+    public function speakerCertificateFolio(): string
+    {
+        $firma = strtoupper(substr(hash_hmac('sha256', 'constancia-ponente:'.$this->id, (string) config('app.key')), 0, 6));
+
+        return 'AT26-P-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT).'-'.$firma;
+    }
+
     /** "24 Nov" (sin el punto que agrega Carbon en español). */
     public static function shortDate($date): ?string
     {

@@ -18,14 +18,65 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $response = $this->post('/register', $this->datos());
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertSessionHas('success');
+
+        $user = \App\Models\User::where('matricula', '202308492')->first();
+        $this->assertTrue($user->hasRole('alumno'));
+        $this->assertSame('Ingeniería en Software', $user->carrera);
+    }
+
+    public function test_puede_registrarse_como_irregular(): void
+    {
+        $this->post('/register', $this->datos(['cuatrimestre' => 'Irregular']))->assertSessionHasNoErrors();
+
+        $user = \App\Models\User::where('matricula', '202308492')->first();
+        $this->assertSame('Irregular', $user->cuatrimestre);
+        $this->assertSame('irregular', $user->estatus);
+    }
+
+    public function test_solo_acepta_correo_institucional(): void
+    {
+        $this->post('/register', $this->datos(['email' => 'valeria@gmail.com']))
+            ->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        // Subdominios del dominio institucional sí se aceptan
+        $this->post('/register', $this->datos(['email' => 'valeria@micorreo.upp.edu.mx']))
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_valida_matricula_y_aceptacion(): void
+    {
+        $this->post('/register', $this->datos(['matricula' => '12345']))->assertSessionHasErrors('matricula');
+        $this->post('/register', $this->datos(['acepto' => null]))->assertSessionHasErrors('acepto');
+        $this->assertGuest();
+    }
+
+    public function test_puede_iniciar_sesion_con_matricula(): void
+    {
+        $this->post('/register', $this->datos());
+        auth()->logout();
+
+        $this->post('/login', ['email' => '202308492', 'password' => 'password123'])
+            ->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticated();
+    }
+
+    private function datos(array $cambios = []): array
+    {
+        return array_merge([
+            'matricula' => '202308492',
+            'name' => 'Valeria Martínez Solís',
+            'carrera' => 'Ingeniería en Software',
+            'cuatrimestre' => 7,
+            'email' => 'valeria.martinez@upp.edu.mx',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'acepto' => '1',
+        ], $cambios);
     }
 }
