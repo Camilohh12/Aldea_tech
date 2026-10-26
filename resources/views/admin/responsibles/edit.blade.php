@@ -77,7 +77,7 @@
                             · {{ $activity->date->format('d/m/Y') }}
                         @endif
                         @if ($activity->start_time)
-                            · {{ $activity->time_range }} h
+                            · {{ $activity->timeRange() }} h
                         @endif
                     </p>
                 </div>

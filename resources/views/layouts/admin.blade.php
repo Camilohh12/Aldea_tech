@@ -53,10 +53,11 @@
     // Menú principal del administrador (igual al prototipo de Figma).
     // Si la ruta todavía no existe, el enlace se muestra deshabilitado.
     $menu = [
-        ['label' => 'Panel General', 'route' => 'admin.dashboard',          'active' => 'admin.dashboard'],
+        ['label' => 'Panel General', 'route' => 'admin.home',               'active' => 'admin.home'],
         ['label' => 'Talleres',      'route' => 'admin.activities.index',   'active' => 'admin.activities.*'],
         ['label' => 'Asistencias',   'route' => 'admin.attendances.index',  'active' => 'admin.attendances.*'],
-        ['label' => 'Certificados',  'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*'],
+        // Constancias de ponentes (módulo de Francisco, ruta admin.constancias)
+        ['label' => 'Certificados',  'route' => 'admin.constancias',        'active' => 'admin.constancias*'],
         ['label' => 'Reportes',      'route' => 'admin.reports.index',      'active' => 'admin.reports.*'],
     ];
 
@@ -82,7 +83,7 @@
             <div class="flex items-center justify-between h-16 lg:h-[72px] gap-6">
 
                 <!-- Logo -->
-                <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : route('admin.rooms.index') }}"
+                <a href="{{ route('admin.home') }}"
                    class="flex items-center gap-3 shrink-0">
                     <span class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-upp-primary font-heading font-extrabold">
                         UPP

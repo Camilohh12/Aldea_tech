@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Activity extends Model
 {
@@ -62,10 +62,63 @@ class Activity extends Model
     }
 
     // Horario para mostrar en pantalla, por ejemplo "10:00 – 12:00"
-    protected function timeRange(): Attribute
+    // (mismo método que usa el módulo alumno)
+    public function timeRange(): string
     {
-        return Attribute::get(
-            fn () => substr((string) $this->start_time, 0, 5) . ' – ' . substr((string) $this->end_time, 0, 5)
-        );
+        $start = $this->start_time ? substr($this->start_time, 0, 5) : '--:--';
+        $end = $this->end_time ? substr($this->end_time, 0, 5) : '--:--';
+
+        return "{$start} – {$end}";
+    }
+
+    // Fecha y hora de inicio y fin, y estado según la hora actual
+    // (mismos métodos que usa el módulo alumno)
+    public function startsAt(): ?Carbon
+    {
+        if (! $this->date || ! $this->start_time) {
+            return null;
+        }
+
+        return Carbon::parse($this->date->format('Y-m-d').' '.$this->start_time);
+    }
+
+    public function endsAt(): ?Carbon
+    {
+        if (! $this->date || ! $this->end_time) {
+            return null;
+        }
+
+        return Carbon::parse($this->date->format('Y-m-d').' '.$this->end_time);
+    }
+
+    public function isInProgress(): bool
+    {
+        $start = $this->startsAt();
+        $end = $this->endsAt();
+
+        return $start && $end && now()->between($start, $end);
+    }
+
+    public function hasEnded(): bool
+    {
+        $end = $this->endsAt();
+
+        return $end !== null && $end->isPast();
+    }
+
+    public function durationMinutes(): int
+    {
+        $start = $this->startsAt();
+        $end = $this->endsAt();
+
+        return $start && $end ? (int) $start->diffInMinutes($end) : 0;
+    }
+
+    // Horas que acredita: las que fijó el admin o, si no hay, la duración del horario
+    public function creditedHours(): float
+    {
+        return $this->duration_hours !== null
+            ? (float) $this->duration_hours
+            : round($this->durationMinutes() / 60, 2);
     }
 }

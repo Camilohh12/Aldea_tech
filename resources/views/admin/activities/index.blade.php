@@ -161,7 +161,7 @@
                                 <p class="text-xs text-gray-500 mt-1">
                                     {{ $activity->date ? ucfirst($activity->date->locale('es')->translatedFormat('D j M')) : 'Sin fecha' }}
                                     @if ($activity->start_time)
-                                        · {{ $activity->time_range }}
+                                        · {{ $activity->timeRange() }}
                                     @endif
                                 </p>
                             </td>

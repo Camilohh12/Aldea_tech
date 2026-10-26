@@ -230,7 +230,7 @@ class ActivityController extends Controller
 
         // 4. La misma aula no puede tener dos actividades a la vez
         if ($clash = $overlapping->firstWhere('room_id', $data['room_id'])) {
-            $errors['room_id'] = "El aula «{$room->name}» ya está ocupada por «{$clash->title}» ({$clash->time_range}).";
+            $errors['room_id'] = "El aula «{$room->name}» ya está ocupada por «{$clash->title}» ({$clash->timeRange()}).";
         }
 
         // 5. Un ponente no puede estar en dos actividades a la vez
@@ -238,14 +238,14 @@ class ActivityController extends Controller
             $shared = $other->speakers->whereIn('id', $data['speakers'])->first();
 
             if ($shared) {
-                $errors['speakers'] = "{$shared->name} ya imparte «{$other->title}» ({$other->time_range}) ese día.";
+                $errors['speakers'] = "{$shared->name} ya imparte «{$other->title}» ({$other->timeRange()}) ese día.";
                 break;
             }
         }
 
         // 6. El responsable no puede supervisar dos actividades a la vez
         if ($clash = $overlapping->firstWhere('responsible_id', $data['responsible_id'])) {
-            $errors['responsible_id'] = "Este responsable ya supervisa «{$clash->title}» ({$clash->time_range}) ese día.";
+            $errors['responsible_id'] = "Este responsable ya supervisa «{$clash->title}» ({$clash->timeRange()}) ese día.";
         }
 
         return $errors;
