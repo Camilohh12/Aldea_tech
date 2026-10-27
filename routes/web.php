@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SpeakerController;
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ResponsibleController;
 use Illuminate\Support\Facades\Route;
@@ -60,8 +61,15 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         Route::resource('responsibles', ResponsibleController::class)
             ->except(['show']);
 
+        // Asistencias: el admin consulta (el responsable pasa lista)
+        Route::get('/asistencias', [AttendanceController::class, 'index'])
+            ->name('attendances.index');
+        Route::get('/asistencias/{activity}', [AttendanceController::class, 'show'])
+            ->name('attendances.show');
+        Route::get('/asistencias/{activity}/csv', [AttendanceController::class, 'export'])
+            ->name('attendances.export');
+
         // proximamente
-        // Asistencias
         // Certificados
         // Reportes
     });
