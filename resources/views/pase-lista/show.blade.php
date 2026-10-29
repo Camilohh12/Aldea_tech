@@ -11,7 +11,7 @@
     {{-- Actividad --}}
     <section class="mb-4 rounded-2xl border border-aldea-100/80 bg-white p-4 shadow-sm">
         <p class="text-xs font-semibold text-aldea-700">
-            {{ $activity->type?->name ?? 'Actividad' }} ·
+            {{ $activity->activityType?->name ?? 'Actividad' }} ·
             {{ \App\Models\Activity::shortDate($activity->date) ?? 'Fecha por definir' }} · {{ $activity->timeRange() }} hrs
         </p>
         <h1 class="mt-1 text-lg font-bold leading-snug">{{ $activity->title }}</h1>

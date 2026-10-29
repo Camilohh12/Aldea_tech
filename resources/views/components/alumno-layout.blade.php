@@ -34,7 +34,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{ $head ?? '' }}
 </head>
-<body class="min-h-screen bg-lavanda font-sans text-tinta antialiased">
+<body class="min-h-screen bg-lavanda font-heading text-tinta antialiased">
 
     {{-- Encabezado --}}
     <header class="sticky top-0 z-30 border-b border-aldea-100/70 bg-lavanda/90 backdrop-blur">

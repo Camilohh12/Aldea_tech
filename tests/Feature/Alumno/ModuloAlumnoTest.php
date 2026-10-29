@@ -19,9 +19,10 @@ class ModuloAlumnoTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite(); // las pruebas no dependen de que `npm run dev` esté corriendo
-        Role::create(['name' => 'alumno']);
-        Role::create(['name' => 'admin']);
-        Role::create(['name' => 'tutor']);
+        Role::findOrCreate('alumno', 'web');
+        Role::findOrCreate('admin', 'web');
+        Role::findOrCreate('tutor', 'web');
+        Role::findOrCreate('responsable', 'web');
         Carbon::setTestNow('2026-11-10 08:00:00');
     }
 
@@ -36,14 +37,18 @@ class ModuloAlumnoTest extends TestCase
         return User::factory()->create()->assignRole('alumno');
     }
 
-    private function tutor(): User
+    private ?User $responsableAsignado = null;
+
+    /** Responsable que pasa lista; queda asignado a todas las actividades de la prueba. */
+    private function responsable(): User
     {
-        return User::factory()->create()->assignRole('tutor');
+        return $this->responsableAsignado ??= User::factory()->create()->assignRole('responsable');
     }
 
     private function actividad(array $attrs = []): Activity
     {
         return Activity::create(array_merge([
+            'responsible_id' => $this->responsable()->id,
             'title' => 'Taller de prueba',
             'date' => '2026-11-18',
             'start_time' => '11:00',
@@ -101,15 +106,15 @@ class ModuloAlumnoTest extends TestCase
         $this->actingAs($this->alumno())->get(route('pase-lista.index'))->assertForbidden();
     }
 
-    public function test_el_tutor_ve_la_lista_sin_los_codigos_reales(): void
+    public function test_el_responsable_ve_la_lista_sin_los_codigos_reales(): void
     {
         $alumno = $this->alumno();
         $actividad = $this->actividad(['title' => 'Docker']);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id]);
 
-        $this->actingAs($this->tutor())->get('/dashboard')->assertRedirect(route('pase-lista.index'));
-        $this->actingAs($this->tutor())->get(route('pase-lista.index'))->assertOk()->assertSee('Docker');
-        $this->actingAs($this->tutor())->get(route('pase-lista.show', $actividad))
+        $this->actingAs($this->responsable())->get('/dashboard')->assertRedirect(route('pase-lista.index'));
+        $this->actingAs($this->responsable())->get(route('pase-lista.index'))->assertOk()->assertSee('Docker');
+        $this->actingAs($this->responsable())->get(route('pase-lista.show', $actividad))
             ->assertOk()
             ->assertSee($alumno->name)
             ->assertSee($e->qrHash())
@@ -232,24 +237,24 @@ class ModuloAlumnoTest extends TestCase
         $this->assertNotSame($viejo, Enrollment::first()->qr_token);
     }
 
-    public function test_el_tutor_escanea_el_pase_y_registra_la_asistencia(): void
+    public function test_el_responsable_escanea_el_pase_y_registra_la_asistencia(): void
     {
         $alumno = $this->alumno();
-        $tutor = $this->tutor();
+        $resp = $this->responsable();
         $actividad = $this->actividad(['checkin_enabled' => true]);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id]);
 
-        $this->actingAs($tutor)
+        $this->actingAs($resp)
             ->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])
             ->assertOk()
             ->assertJson(['ok' => true, 'already' => false, 'student' => ['name' => $alumno->name]]);
 
         $e->refresh();
         $this->assertTrue($e->attended);
-        $this->assertSame($tutor->id, $e->checked_in_by);
+        $this->assertSame($resp->id, $e->checked_in_by);
 
         // Escanear otra vez no es error
-        $this->actingAs($tutor)
+        $this->actingAs($resp)
             ->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])
             ->assertOk()
             ->assertJson(['already' => true]);
@@ -262,27 +267,27 @@ class ModuloAlumnoTest extends TestCase
         $laravel = $this->actividad(['title' => 'Laravel', 'date' => '2026-11-19', 'checkin_enabled' => true]);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $laravel->id]);
 
-        $this->actingAs($this->tutor())
+        $this->actingAs($this->responsable())
             ->postJson(route('pase-lista.store', $docker), ['token' => $e->qr_token])
             ->assertStatus(422)
             ->assertJsonFragment(['message' => 'Este pase es de «Laravel», no de esta actividad.']);
     }
 
-    public function test_rechaza_si_el_pase_de_lista_esta_cerrado_y_el_tutor_puede_abrirlo(): void
+    public function test_rechaza_si_el_pase_de_lista_esta_cerrado_y_el_responsable_puede_abrirlo(): void
     {
         $alumno = $this->alumno();
-        $tutor = $this->tutor();
+        $resp = $this->responsable();
         $actividad = $this->actividad(['checkin_enabled' => false]);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id]);
 
-        $this->actingAs($tutor)
+        $this->actingAs($resp)
             ->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])
             ->assertStatus(422);
 
-        $this->actingAs($tutor)->post(route('pase-lista.toggle', $actividad));
+        $this->actingAs($resp)->post(route('pase-lista.toggle', $actividad));
         $this->assertTrue($actividad->fresh()->checkin_enabled);
 
-        $this->actingAs($tutor)
+        $this->actingAs($resp)
             ->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])
             ->assertOk();
     }
@@ -293,21 +298,21 @@ class ModuloAlumnoTest extends TestCase
         $actividad = $this->actividad(['checkin_enabled' => true]);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id, 'status' => 'cancelled']);
 
-        $this->actingAs($this->tutor())
+        $this->actingAs($this->responsable())
             ->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])
             ->assertStatus(422);
-        $this->actingAs($this->tutor())
+        $this->actingAs($this->responsable())
             ->postJson(route('pase-lista.store', $actividad), ['token' => 'no-existe'])
             ->assertStatus(422);
     }
 
-    public function test_registro_manual_del_tutor(): void
+    public function test_registro_manual_del_responsable(): void
     {
         $alumno = $this->alumno();
         $actividad = $this->actividad(['checkin_enabled' => true]);
         $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id]);
 
-        $this->actingAs($this->tutor())
+        $this->actingAs($this->responsable())
             ->post(route('pase-lista.manual', [$actividad, $e->id]))
             ->assertSessionHas('success');
 
@@ -316,14 +321,14 @@ class ModuloAlumnoTest extends TestCase
 
     public function test_sincroniza_escaneos_guardados_sin_conexion(): void
     {
-        Carbon::setTestNow('2026-11-18 15:00:00'); // Ya terminó; el tutor sincroniza después.
+        Carbon::setTestNow('2026-11-18 15:00:00'); // Ya terminó; el responsable sincroniza después.
 
-        $tutor = $this->tutor();
+        $resp = $this->responsable();
         $actividad = $this->actividad(); // pase cerrado: sin conexión se valida por horario
         $a = Enrollment::create(['user_id' => $this->alumno()->id, 'activity_id' => $actividad->id]);
         $b = Enrollment::create(['user_id' => $this->alumno()->id, 'activity_id' => $actividad->id]);
 
-        $res = $this->actingAs($tutor)->postJson(route('pase-lista.sync', $actividad), [
+        $res = $this->actingAs($resp)->postJson(route('pase-lista.sync', $actividad), [
             'items' => [
                 // 11:05 hora de México (17:05 UTC), dentro del horario 11:00–13:00
                 ['id' => 'a', 'token' => $a->qr_token, 'scanned_at' => '2026-11-18T17:05:00Z'],
@@ -343,5 +348,38 @@ class ModuloAlumnoTest extends TestCase
         $this->assertTrue($a->synced_offline);
         $this->assertSame('11:05', $a->checkin_time->format('H:i'));
         $this->assertFalse($b->fresh()->attended);
+    }
+
+    public function test_solo_el_responsable_asignado_o_el_admin_pasan_lista(): void
+    {
+        $alumno = $this->alumno();
+        $actividad = $this->actividad(['title' => 'Docker', 'checkin_enabled' => true]);
+        $e = Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id]);
+
+        // Otro responsable no ve ni puede pasar lista de esta actividad
+        $otro = User::factory()->create()->assignRole('responsable');
+        $this->actingAs($otro)->get(route('pase-lista.index'))->assertOk()->assertDontSee('Docker');
+        $this->actingAs($otro)->get(route('pase-lista.show', $actividad))->assertForbidden();
+        $this->actingAs($otro)->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])->assertForbidden();
+        $this->actingAs($otro)->post(route('pase-lista.manual', [$actividad, $e->id]))->assertForbidden();
+
+        // Un tutor ya no pasa lista
+        $tutor = User::factory()->create()->assignRole('tutor');
+        $this->actingAs($tutor)->get(route('pase-lista.index'))->assertForbidden();
+
+        // El administrador sí puede
+        $admin = User::factory()->create()->assignRole('admin');
+        $this->actingAs($admin)->get(route('pase-lista.show', $actividad))->assertOk();
+        $this->actingAs($admin)->postJson(route('pase-lista.store', $actividad), ['token' => $e->qr_token])->assertOk();
+        $this->assertSame($admin->id, $e->fresh()->checked_in_by);
+    }
+
+    public function test_las_horas_de_la_agenda_usan_duration_hours(): void
+    {
+        $alumno = $this->alumno();
+        $actividad = $this->actividad(['duration_hours' => 3]); // horario de 2 h, pero acredita 3
+        Enrollment::create(['user_id' => $alumno->id, 'activity_id' => $actividad->id, 'attended' => true]);
+
+        $this->actingAs($alumno)->get(route('alumno.agenda'))->assertOk()->assertSee('3 / 20 hrs');
     }
 }

@@ -17,7 +17,7 @@
     <h3 class="mt-1.5 font-semibold leading-snug">{{ $activity->title }}</h3>
     <p class="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
         <x-icono name="ubicacion" class="h-4 w-4" /> {{ $activity->room?->name ?? 'Sede por confirmar' }}
-        @if ($activity->type) · {{ $activity->type->name }} @endif
+        @if ($activity->activityType) · {{ $activity->activityType->name }} @endif
     </p>
     <div class="mt-3 flex items-center justify-between text-[13px]">
         <span class="font-medium text-slate-700">Asistencia</span>

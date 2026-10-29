@@ -18,40 +18,49 @@ class Activity extends Model
         'activity_type_id',
         'room_id',
         'speaker_id',
-        'capacity',
+        'responsible_id',
         'date',
         'start_time',
         'end_time',
+        'capacity',
+        'duration_hours',
         'checkin_enabled',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-            'capacity' => 'integer',
-            'checkin_enabled' => 'boolean',
-        ];
-    }
-
+    protected $casts = [
+        'date' => 'date',
+        'capacity' => 'integer',
+        'checkin_enabled' => 'boolean',
+        'duration_hours' => 'decimal:2',
+    ];
 
     // ---------------------------------------------------------------- Relaciones
 
-    public function type(): BelongsTo
+    // Tipo de actividad: curso, taller, conferencia...
+    public function activityType(): BelongsTo
     {
-        return $this->belongsTo(ActivityType::class, 'activity_type_id');
+        return $this->belongsTo(ActivityType::class);
     }
 
+    // Aula o laboratorio asignado
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
-    public function speaker(): BelongsTo
+    // Responsable de registrar las asistencias (pase de lista)
+    public function responsible(): BelongsTo
     {
-        return $this->belongsTo(Speaker::class);
+        return $this->belongsTo(User::class, 'responsible_id');
     }
 
+    // Una actividad puede tener varios ponentes
+    public function speakers(): BelongsToMany
+    {
+        return $this->belongsToMany(Speaker::class, 'activity_speaker')->withTimestamps();
+    }
+
+    // Inscripciones de los alumnos
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
@@ -77,6 +86,18 @@ class Activity extends Model
     public function scopeChronological(Builder $query): Builder
     {
         return $query->orderBy('date')->orderBy('start_time');
+    }
+
+    // ---------------------------------------------------------------- Ponentes
+
+    /** "Mtro. Carlos Méndez y Dra. Ana García" (vacío si no hay ponentes). */
+    public function speakerNames(): string
+    {
+        $nombres = $this->speakers->pluck('name');
+
+        return $nombres->count() > 1
+            ? $nombres->slice(0, -1)->implode(', ').' y '.$nombres->last()
+            : (string) $nombres->first();
     }
 
     // ---------------------------------------------------------------- Cupo y horario
@@ -113,6 +134,16 @@ class Activity extends Model
         return $available !== null && $available <= 0;
     }
 
+    // Horario para mostrar en pantalla, por ejemplo "10:00 – 12:00"
+    public function timeRange(): string
+    {
+        $start = $this->start_time ? substr($this->start_time, 0, 5) : '--:--';
+        $end = $this->end_time ? substr($this->end_time, 0, 5) : '--:--';
+
+        return "{$start} – {$end}";
+    }
+
+    // Fecha y hora de inicio y fin, y estado según la hora actual
     public function startsAt(): ?Carbon
     {
         if (! $this->date || ! $this->start_time) {
@@ -136,6 +167,37 @@ class Activity extends Model
         $start = $this->startsAt();
 
         return $start !== null && $start->isPast();
+    }
+
+    public function isInProgress(): bool
+    {
+        $start = $this->startsAt();
+        $end = $this->endsAt();
+
+        return $start && $end && now()->between($start, $end);
+    }
+
+    public function hasEnded(): bool
+    {
+        $end = $this->endsAt();
+
+        return $end !== null && $end->isPast();
+    }
+
+    public function durationMinutes(): int
+    {
+        $start = $this->startsAt();
+        $end = $this->endsAt();
+
+        return $start && $end ? (int) $start->diffInMinutes($end) : 0;
+    }
+
+    // Horas que acredita: las que fijó el admin o, si no hay, la duración del horario
+    public function creditedHours(): float
+    {
+        return $this->duration_hours !== null
+            ? (float) $this->duration_hours
+            : round($this->durationMinutes() / 60, 2);
     }
 
     /** ¿Se cruza en horario con otra actividad? */
@@ -168,49 +230,46 @@ class Activity extends Model
         return $moment->between($start->copy()->subMinutes(15), $end->copy()->addMinutes(15));
     }
 
-    public function isInProgress(): bool
-    {
-        $start = $this->startsAt();
-        $end = $this->endsAt();
+    // ---------------------------------------------------------------- Pase de lista
 
-        return $start && $end && now()->between($start, $end);
+    /** El responsable asignado y los administradores pueden pasar lista. */
+    public function canTakeAttendance(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['admin', 'super_admin'])
+            || ($this->responsible_id !== null && $this->responsible_id === $user->id);
     }
 
-    public function hasEnded(): bool
-    {
-        $end = $this->endsAt();
-
-        return $end !== null && $end->isPast();
-    }
-
-    public function durationMinutes(): int
-    {
-        $start = $this->startsAt();
-        $end = $this->endsAt();
-
-        return $start && $end ? (int) $start->diffInMinutes($end) : 0;
-    }
+    // ---------------------------------------------------------------- Presentación
 
     /** Datos públicos de la actividad para respuestas JSON. */
     public function summary(): array
     {
         return [
             'title' => $this->title,
-            'type' => $this->type?->name,
+            'type' => $this->activityType?->name,
             'room' => $this->room?->name,
             'time' => $this->start_time ? substr($this->start_time, 0, 5) : null,
         ];
     }
 
     /**
-     * Folio de la constancia del ponente, p. ej. AT26-P-00004-9F3A1C.
+     * Folio de la constancia de un ponente en esta actividad, p. ej. AT26-P-00004-03-9F3A1C.
      * El sufijo se firma con APP_KEY para que no se pueda inventar un folio válido.
      */
-    public function speakerCertificateFolio(): string
+    public function speakerCertificateFolio(Speaker $speaker): string
     {
-        $firma = strtoupper(substr(hash_hmac('sha256', 'constancia-ponente:'.$this->id, (string) config('app.key')), 0, 6));
+        $firma = strtoupper(substr(hash_hmac(
+            'sha256',
+            'constancia-ponente:'.$this->id.':'.$speaker->id,
+            (string) config('app.key'),
+        ), 0, 6));
 
-        return 'AT26-P-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT).'-'.$firma;
+        return 'AT26-P-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT)
+            .'-'.str_pad((string) $speaker->id, 2, '0', STR_PAD_LEFT).'-'.$firma;
     }
 
     /** "24 Nov" (sin el punto que agrega Carbon en español). */
@@ -222,14 +281,6 @@ class Activity extends Model
 
         $texto = Carbon::parse($date)->locale('es')->isoFormat('D MMM');
 
-        return \Illuminate\Support\Str::title(str_replace('.', '', $texto));
-    }
-
-    public function timeRange(): string
-    {
-        $start = $this->start_time ? substr($this->start_time, 0, 5) : '--:--';
-        $end = $this->end_time ? substr($this->end_time, 0, 5) : '--:--';
-
-        return "{$start} – {$end}";
+        return Str::title(str_replace('.', '', $texto));
     }
 }

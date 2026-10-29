@@ -1,43 +1,60 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\ConstanciasPonentesController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ResponsibleController;
+use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\SpeakerController;
 use App\Http\Controllers\Alumno\AgendaController;
 use App\Http\Controllers\Alumno\CatalogoController;
 use App\Http\Controllers\Alumno\InscripcionController;
 use App\Http\Controllers\Alumno\PasesController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaseLista\PaseListaController;
-use App\Http\Controllers\Admin\ConstanciasPonentesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Página principal: portada del evento y catálogo público
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Dashboard: cada rol entra a su sección
 Route::get('/dashboard', function () {
-    // Cada rol entra directo a su módulo (conservando mensajes como el de bienvenida).
+    // Conserva mensajes de una redirección previa (p. ej. la bienvenida del registro)
     session()->reflash();
-    if (auth()->user()->hasRole('alumno')) {
+
+    $user = auth()->user();
+
+    // Administradores: al panel de administración
+    if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        return redirect()->route('admin.home');
+    }
+
+    if ($user->hasRole('alumno')) {
         return redirect()->route('alumno.catalogo');
     }
 
-    if (auth()->user()->hasAnyRole(['admin', 'super_admin'])) {
-        return redirect()->route('admin.constancias');
-    }
-
-    if (auth()->user()->hasAnyRole(['tutor', 'docente', 'ponente'])) {
+    // Responsables y docentes: a pasar lista de sus actividades
+    if ($user->hasAnyRole(['responsable', 'docente'])) {
         return redirect()->route('pase-lista.index');
     }
 
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Perfil del usuario
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 });
 
-// Módulo Alumno (issue: interfaz móvil del alumno)
+// MÓDULO ALUMNO: catálogo, inscripción, agenda y pases QR
 Route::middleware(['auth', 'role:alumno'])
     ->prefix('alumno')
     ->name('alumno.')
@@ -51,8 +68,9 @@ Route::middleware(['auth', 'role:alumno'])
         Route::get('/pases', [PasesController::class, 'index'])->name('pases');
     });
 
-// Pase de lista: el tutor/ponente escanea el QR de cada alumno
-Route::middleware(['auth', 'role:tutor|docente|ponente|admin|super_admin'])
+// PASE DE LISTA: solo el responsable asignado a la actividad y los administradores
+// (la regla por actividad está en Activity::canTakeAttendance)
+Route::middleware(['auth', 'role:responsable|docente|admin|super_admin'])
     ->prefix('pase-lista')
     ->name('pase-lista.')
     ->group(function () {
@@ -65,13 +83,42 @@ Route::middleware(['auth', 'role:tutor|docente|ponente|admin|super_admin'])
             ->whereNumber('enrollment')->name('manual');
     });
 
-// Administración: el admin genera las constancias de los ponentes
+// PANEL DE ADMINISTRACIÓN (Administrador y Super Admin)
 Route::middleware(['auth', 'role:admin|super_admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/constancias-ponentes', [ConstanciasPonentesController::class, 'index'])->name('constancias');
-        Route::get('/constancias-ponentes/{activity}/pdf', [ConstanciasPonentesController::class, 'download'])->name('constancias.pdf');
+
+        // Panel General: entrada al panel de administración
+        Route::get('/', [DashboardController::class, 'index'])
+            ->name('home');
+
+        // CRUD de Aulas
+        Route::resource('rooms', RoomController::class)
+            ->except(['show']);
+
+        // CRUD de Ponentes
+        Route::resource('speakers', SpeakerController::class)
+            ->except(['show']);
+
+        // CRUD de Actividades
+        Route::resource('activities', ActivityController::class)
+            ->except(['show']);
+
+        // CRUD de Responsables (usuarios con rol "responsable")
+        Route::resource('responsibles', ResponsibleController::class)
+            ->except(['show']);
+
+        // Certificados: constancias de ponentes en PDF
+        Route::get('/constancias-ponentes', [ConstanciasPonentesController::class, 'index'])
+            ->name('constancias');
+        Route::get('/constancias-ponentes/{activity}/{speaker}/pdf', [ConstanciasPonentesController::class, 'download'])
+            ->name('constancias.pdf');
+
+        // proximamente
+        // Asistencias
+        // Reportes
     });
 
+// Rutas de autenticación
 require __DIR__.'/auth.php';

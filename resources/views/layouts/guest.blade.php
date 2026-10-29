@@ -14,7 +14,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="flex min-h-screen flex-col bg-lavanda font-sans text-tinta antialiased">
+    <body class="flex min-h-screen flex-col bg-lavanda font-heading text-tinta antialiased">
         {{-- Fondo con brillos suaves --}}
         <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
             <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-aldea-100/70 blur-3xl"></div>

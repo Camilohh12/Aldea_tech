@@ -14,7 +14,7 @@ class PasesController extends Controller
     {
         $pases = Enrollment::registered()
             ->where('user_id', $request->user()->id)
-            ->with(['activity.type', 'activity.room'])
+            ->with(['activity.activityType', 'activity.room'])
             ->get()
             // Primero las que siguen vigentes (en curso o próximas), luego las terminadas.
             ->sortBy(fn (Enrollment $e) => [

@@ -10,11 +10,11 @@
 
     // Pestañas según el rol
     $tabs = [];
-    if ($user->hasAnyRole(['tutor', 'docente', 'ponente', 'admin', 'super_admin'])) {
+    if ($user->hasAnyRole(['responsable', 'docente', 'admin', 'super_admin'])) {
         $tabs[] = ['route' => 'pase-lista.index', 'match' => 'pase-lista.*', 'label' => 'Pase de lista'];
     }
     if ($user->hasAnyRole(['admin', 'super_admin'])) {
-        $tabs[] = ['route' => 'admin.constancias', 'match' => 'admin.constancias*', 'label' => 'Constancias de ponentes'];
+        $tabs[] = ['route' => 'admin.home', 'match' => 'admin.*', 'label' => 'Panel de administración'];
     }
 @endphp
 
@@ -35,7 +35,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{ $head ?? '' }}
 </head>
-<body class="min-h-screen bg-lavanda font-sans text-tinta antialiased">
+<body class="min-h-screen bg-lavanda font-heading text-tinta antialiased">
     <header class="sticky top-0 z-30 border-b border-aldea-100/70 bg-lavanda/90 backdrop-blur">
         <div class="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
             <div class="flex min-w-0 items-center gap-3">

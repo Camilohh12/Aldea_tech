@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name', 'capacity'];
 
-    protected function casts(): array
-    {
-        return ['capacity' => 'integer'];
-    }
+    protected $casts = ['capacity' => 'integer'];
 
-    public function activities(): HasMany
+    // Relación: Un aula tiene muchas actividades
+    public function activities()
     {
         return $this->hasMany(Activity::class);
     }

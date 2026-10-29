@@ -14,7 +14,7 @@
     if ($asistentes > 0) {
         $partes[] = 'con una asistencia registrada de '.$asistentes.' '.($asistentes === 1 ? 'participante' : 'participantes');
     }
-    $tipo = $actividad->type ? ' ('.e(mb_strtolower($actividad->type->name)).')' : '';
+    $tipo = $actividad->activityType ? ' ('.e(mb_strtolower($actividad->activityType->name)).')' : '';
 @endphp
 <!DOCTYPE html>
 <html lang="es">

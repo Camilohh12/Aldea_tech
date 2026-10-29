@@ -7,6 +7,14 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            {{-- Regreso al panel para administradores (su layout no tiene menú aquí) --}}
+            @hasanyrole('admin|super_admin')
+                <a href="{{ route('admin.home') }}"
+                   class="inline-flex items-center gap-1 px-4 sm:px-0 text-sm font-medium text-[#4B1F6F] hover:underline">
+                    ← Volver al panel de administración
+                </a>
+            @endhasanyrole
+
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')

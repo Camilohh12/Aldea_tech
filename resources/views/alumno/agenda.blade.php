@@ -105,8 +105,8 @@
 
                                 <article class="min-w-0 flex-1 rounded-2xl border border-aldea-100/80 bg-white p-4 shadow-sm">
                                     <div class="flex flex-wrap items-center justify-between gap-2">
-                                        @if ($activity->type)
-                                            <span class="rounded-full bg-aldea-100 px-2.5 py-1 text-xs font-semibold text-aldea-800">{{ $activity->type->name }}</span>
+                                        @if ($activity->activityType)
+                                            <span class="rounded-full bg-aldea-100 px-2.5 py-1 text-xs font-semibold text-aldea-800">{{ $activity->activityType->name }}</span>
                                         @endif
 
                                         @if ($enrollment->attended)
@@ -128,7 +128,7 @@
                                         <x-icono name="ubicacion" class="h-4 w-4 shrink-0" /> {{ $activity->room?->name ?? 'Sede por confirmar' }}
                                     </p>
                                     <p class="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                                        <x-icono name="persona" class="h-4 w-4 shrink-0" /> {{ $activity->speaker?->name ?? 'Ponente por confirmar' }}
+                                        <x-icono name="persona" class="h-4 w-4 shrink-0" /> {{ $activity->speakerNames() ?: 'Ponente por confirmar' }}
                                     </p>
 
                                     @if ($enrollment->attended)

@@ -62,17 +62,21 @@
                 $started = $activity->hasStarted();
                 $registered = $activity->registeredCount();
                 $percent = $capacity ? min(100, round($registered / $capacity * 100)) : 0;
-                $bio = $activity->speaker?->bio ? \Illuminate\Support\Str::limit(strtok($activity->speaker->bio, "\n"), 40) : 'Ponente';
+                $ponente = $activity->speakers->first();
+                $otros = $activity->speakers->count() - 1;
+                $bio = $otros > 0
+                    ? 'y '.$otros.' '.($otros === 1 ? 'ponente más' : 'ponentes más')
+                    : ($ponente?->bio ? \Illuminate\Support\Str::limit(strtok($ponente->bio, "\n"), 40) : 'Ponente');
             @endphp
 
             <article class="flex flex-col rounded-2xl border border-aldea-100/80 bg-white p-4 shadow-sm">
                 <div class="flex items-center justify-between gap-2">
-                    @if ($activity->type)
+                    @if ($activity->activityType)
                         <span @class([
                             'rounded-full px-2.5 py-1 text-xs font-semibold',
                             'bg-aldea-200/70 text-aldea-800' => $enrolled,
                             'bg-aldea-100 text-aldea-800' => ! $enrolled,
-                        ])>{{ $activity->type->name }}</span>
+                        ])>{{ $activity->activityType->name }}</span>
                     @else
                         <span></span>
                     @endif
@@ -109,9 +113,9 @@
                 @endif
 
                 <div class="mt-3 flex items-center gap-2.5">
-                    <x-iniciales :name="$activity->speaker?->name" size="h-8 w-8 text-[11px]" />
+                    <x-iniciales :name="$ponente?->name" size="h-8 w-8 text-[11px]" />
                     <div class="min-w-0 leading-tight">
-                        <p class="truncate text-sm font-semibold">{{ $activity->speaker?->name ?? 'Ponente por confirmar' }}</p>
+                        <p class="truncate text-sm font-semibold">{{ $ponente?->name ?? 'Ponente por confirmar' }}</p>
                         <p class="truncate text-xs font-medium text-slate-600">{{ $bio }}</p>
                     </div>
                 </div>

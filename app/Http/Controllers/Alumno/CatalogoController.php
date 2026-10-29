@@ -19,13 +19,13 @@ class CatalogoController extends Controller
         ]);
 
         $activities = Activity::query()
-            ->with(['type', 'room', 'speaker'])
+            ->with(['activityType', 'room', 'speakers'])
             ->withRegisteredCount()
             ->when($filters['q'] ?? null, function ($query, $q) {
                 $query->where(fn ($sub) => $sub
                     ->where('title', 'like', "%{$q}%")
                     ->orWhere('description', 'like', "%{$q}%")
-                    ->orWhereHas('speaker', fn ($s) => $s->where('name', 'like', "%{$q}%")));
+                    ->orWhereHas('speakers', fn ($s) => $s->where('name', 'like', "%{$q}%")));
             })
             ->when($filters['tipo'] ?? null, fn ($query, $tipo) => $query->where('activity_type_id', $tipo))
             ->when($filters['fecha'] ?? null, fn ($query, $fecha) => $query->whereDate('date', $fecha))

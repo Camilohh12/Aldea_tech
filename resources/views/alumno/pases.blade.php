@@ -26,7 +26,7 @@
             <div class="flex items-center justify-between gap-2 border-b border-aldea-100/70 bg-aldea-50/60 px-4 py-3">
                 <div class="min-w-0">
                     <p class="text-xs font-semibold text-aldea-700">
-                        {{ $activity->type?->name ?? 'Actividad' }} ·
+                        {{ $activity->activityType?->name ?? 'Actividad' }} ·
                         {{ \App\Models\Activity::shortDate($activity->date) ?? 'Fecha por definir' }} · {{ $activity->timeRange() }} hrs
                     </p>
                     <h2 class="truncate text-base font-bold">{{ $activity->title }}</h2>

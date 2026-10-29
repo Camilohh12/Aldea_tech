@@ -1,8 +1,16 @@
 <?php
 
+// Datos generales del evento Aldea Tecnológica UPP 2026.
 return [
+
+    // Se usan para validar las fechas de las actividades.
+    'event' => [
+        'start_date' => '2026-11-24',
+        'end_date' => '2026-11-26',
+    ],
+
     // Horas de actividades con asistencia necesarias para la liberación
-    // curricular (créditos extracurriculares). Confirmar el valor con la coordinación.
+    // curricular (créditos extracurriculares).
     'horas_liberacion' => (int) env('ALDEA_HORAS_LIBERACION', 20),
 
     // Dominio del correo institucional para el registro de alumnos
@@ -18,4 +26,5 @@ return [
 
     // Opciones de cuatrimestre en el registro; "Irregular" marca al alumno como irregular.
     'cuatrimestres' => [...array_map('strval', range(1, 10)), 'Irregular'],
+
 ];

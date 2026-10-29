@@ -14,7 +14,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 /**
- * Pase de lista del tutor/ponente: escanea el QR de cada alumno inscrito.
+ * Pase de lista: el responsable asignado a la actividad (o un administrador)
+ * escanea el QR del pase de cada alumno inscrito.
  */
 class PaseListaController extends Controller
 {
@@ -22,12 +23,14 @@ class PaseListaController extends Controller
     {
     }
 
-    /** Actividades del evento, con las de hoy primero. */
-    public function index(): View
+    /** Actividades a cargo del usuario (todas si es admin), con las de hoy primero. */
+    public function index(Request $request): View
     {
         $hoy = now()->format('Y-m-d');
+        $user = $request->user();
 
-        $activities = Activity::with(['type', 'room'])
+        $activities = Activity::with(['activityType', 'room'])
+            ->unless($user->hasAnyRole(['admin', 'super_admin']), fn ($q) => $q->where('responsible_id', $user->id))
             ->withRegisteredCount()
             ->withCount(['enrollments as attended_count' => fn ($q) => $q
                 ->where('status', Enrollment::STATUS_REGISTERED)
@@ -44,9 +47,11 @@ class PaseListaController extends Controller
     }
 
     /** Escáner + lista de alumnos inscritos en la actividad. */
-    public function show(Activity $activity): View
+    public function show(Request $request, Activity $activity): View
     {
-        $activity->load(['type', 'room', 'speaker']);
+        $this->autorizar($request, $activity);
+
+        $activity->load(['activityType', 'room', 'speakers']);
 
         $inscritos = $activity->enrollments()
             ->registered()
@@ -73,8 +78,10 @@ class PaseListaController extends Controller
     }
 
     /** Abre o cierra el pase de lista de la actividad. */
-    public function toggle(Activity $activity): RedirectResponse
+    public function toggle(Request $request, Activity $activity): RedirectResponse
     {
+        $this->autorizar($request, $activity);
+
         $activity->update(['checkin_enabled' => ! $activity->checkin_enabled]);
 
         return back()->with('success', $activity->checkin_enabled
@@ -85,6 +92,8 @@ class PaseListaController extends Controller
     /** Escaneo en línea. */
     public function store(Request $request, Activity $activity): JsonResponse
     {
+        $this->autorizar($request, $activity);
+
         $data = $request->validate(['token' => ['required', 'string', 'max:64']]);
 
         try {
@@ -99,6 +108,8 @@ class PaseListaController extends Controller
     /** Sincroniza los escaneos que el tutor guardó sin conexión. */
     public function sync(Request $request, Activity $activity): JsonResponse
     {
+        $this->autorizar($request, $activity);
+
         $data = $request->validate([
             'items' => ['required', 'array', 'max:200'],
             'items.*.id' => ['required', 'string', 'max:64'],
@@ -127,6 +138,8 @@ class PaseListaController extends Controller
     /** Registro manual desde la lista. */
     public function manual(Request $request, Activity $activity, int $enrollment): RedirectResponse
     {
+        $this->autorizar($request, $activity);
+
         try {
             $registro = $this->service->checkInManual($request->user(), $activity, $enrollment);
         } catch (EnrollmentException $e) {
@@ -134,6 +147,16 @@ class PaseListaController extends Controller
         }
 
         return back()->with('success', "Asistencia registrada: {$registro->user->name}.");
+    }
+
+    /** Solo el responsable asignado y los administradores pasan lista de una actividad. */
+    private function autorizar(Request $request, Activity $activity): void
+    {
+        abort_unless(
+            $activity->canTakeAttendance($request->user()),
+            403,
+            'Solo el responsable asignado a esta actividad puede pasar lista.',
+        );
     }
 
     private function exito(Enrollment $enrollment): array

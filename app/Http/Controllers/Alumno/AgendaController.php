@@ -16,7 +16,7 @@ class AgendaController extends Controller
 
         $enrollments = Enrollment::registered()
             ->where('user_id', $request->user()->id)
-            ->with(['activity.type', 'activity.room', 'activity.speaker'])
+            ->with(['activity.activityType', 'activity.room', 'activity.speakers'])
             ->get()
             ->sortBy(fn (Enrollment $e) => $e->activity->startsAt()?->timestamp ?? PHP_INT_MAX)
             ->values();
@@ -33,8 +33,9 @@ class AgendaController extends Controller
             ->when($filtro, fn ($c) => $c->filter(fn ($d) => $d === $filtro))
             ->values();
 
-        $minutosAcreditados = $enrollments->where('attended', true)
-            ->sum(fn (Enrollment $e) => $e->activity->durationMinutes());
+        // Horas acreditadas: duration_hours que fijó el admin (o la duración del horario)
+        $horasAcreditadas = round($enrollments->where('attended', true)
+            ->sum(fn (Enrollment $e) => $e->activity->creditedHours()), 1);
 
         $hoy = now()->format('Y-m-d');
 
@@ -45,7 +46,7 @@ class AgendaController extends Controller
             'filtro' => $filtro,
             'total' => $enrollments->count(),
             'attended' => $enrollments->where('attended', true)->count(),
-            'horasAcreditadas' => round($minutosAcreditados / 60, 1),
+            'horasAcreditadas' => $horasAcreditadas,
             'horasMeta' => config('aldea.horas_liberacion'),
             'tieneActividadHoy' => $enrollments->contains(fn (Enrollment $e) => $e->activity->date?->format('Y-m-d') === $hoy && ! $e->attended),
         ]);
