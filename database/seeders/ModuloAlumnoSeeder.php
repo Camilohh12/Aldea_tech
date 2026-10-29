@@ -129,6 +129,39 @@ class ModuloAlumnoSeeder extends Seeder
             );
         }
 
+        // Tutorados: los alumnos de prueba quedan asignados al tutor
+        $bootcamp = Activity::updateOrCreate(['title' => 'Bootcamp previo: Fundamentos de Redes'], [
+            'description' => 'Curso intensivo previo al evento.',
+            'activity_type_id' => $tipos['Curso'] ?? null,
+            'room_id' => $aulas['Laboratorio 3 (Edificio C)']->id,
+            'responsible_id' => $responsable->id,
+            'date' => now()->subDays(14)->toDateString(),
+            'start_time' => '08:00',
+            'end_time' => '14:00',
+            'duration_hours' => 18, // acredita más horas que el horario (varias sesiones)
+        ]);
+        $bootcamp->speakers()->sync([$ponentes['Ing. Roberto Valenzuela']->id]);
+
+        $redes = User::firstOrCreate(
+            ['email' => 'alumno3@aldea.edu.mx'],
+            ['name' => 'Luis Fernando Castro Vega', 'password' => Hash::make('password123'), 'matricula' => '202308344',
+                'carrera' => 'Ingeniería en Redes y Telecomunicaciones', 'cuatrimestre' => '5', 'email_verified_at' => now()],
+        );
+        $redes->assignRole($rolAlumno);
+
+        // Mariana completa la meta (2 h del pre-evento + 18 h del bootcamp)
+        Enrollment::firstOrCreate(
+            ['user_id' => User::where('email', 'alumno1@aldea.edu.mx')->value('id'), 'activity_id' => $bootcamp->id],
+            ['attended' => true, 'checkin_time' => $bootcamp->date->copy()->setTime(8, 10)],
+        );
+        // Luis se inscribió al foro y al curso, pero aún no tiene asistencias
+        foreach (['Tendencias del Mercado Tech 2027', 'Arquitecturas Microservicios con Laravel & Docker'] as $titulo) {
+            Enrollment::firstOrCreate(['user_id' => $redes->id, 'activity_id' => Activity::where('title', $titulo)->value('id')]);
+        }
+
+        User::whereIn('email', ['alumno@aldea.edu.mx', 'alumno0@aldea.edu.mx', 'alumno1@aldea.edu.mx', 'alumno2@aldea.edu.mx', 'alumno3@aldea.edu.mx'])
+            ->update(['tutor_id' => $tutor->id]);
+
         $this->command?->info('Alumno: alumno@aldea.edu.mx / password123');
         $this->command?->info('Responsable: responsable@aldea.edu.mx / password123');
         $this->command?->info('Tutor:  tutor@aldea.edu.mx / password123');

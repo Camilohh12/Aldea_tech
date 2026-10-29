@@ -13,6 +13,7 @@ use App\Http\Controllers\Alumno\PasesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaseLista\PaseListaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Tutor\TutoradosController;
 use Illuminate\Support\Facades\Route;
 
 // Página principal: portada del evento y catálogo público
@@ -32,6 +33,11 @@ Route::get('/dashboard', function () {
 
     if ($user->hasRole('alumno')) {
         return redirect()->route('alumno.catalogo');
+    }
+
+    // Tutores: a la supervisión de sus tutorados
+    if ($user->hasRole('tutor')) {
+        return redirect()->route('tutor.tutorados');
     }
 
     // Responsables y docentes: a pasar lista de sus actividades
@@ -66,6 +72,16 @@ Route::middleware(['auth', 'role:alumno'])
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
 
         Route::get('/pases', [PasesController::class, 'index'])->name('pases');
+    });
+
+// MÓDULO TUTOR: supervisión de tutorados (solo lectura)
+Route::middleware(['auth', 'role:tutor'])
+    ->prefix('tutor')
+    ->name('tutor.')
+    ->group(function () {
+        Route::get('/tutorados', [TutoradosController::class, 'index'])->name('tutorados');
+        Route::get('/tutorados/{alumno}', [TutoradosController::class, 'show'])
+            ->whereNumber('alumno')->name('tutorados.show');
     });
 
 // PASE DE LISTA: solo el responsable asignado a la actividad y los administradores
