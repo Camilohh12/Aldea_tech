@@ -88,8 +88,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
                     </svg>
                     <input type="search" name="q" value="{{ $search }}"
-                           placeholder="Buscar por nombre de la actividad..."
-                           class="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container">
+                        placeholder="Buscar por nombre de la actividad..."
+                        class="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container">
                 </div>
 
                 <select name="tipo" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container">
@@ -114,7 +114,7 @@
 
                     @if ($search !== '' || $typeId || $day)
                         <a href="{{ route('admin.activities.index') }}"
-                           class="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-upp-surface-low transition">
+                            class="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-upp-surface-low transition">
                             Limpiar
                         </a>
                     @endif
@@ -189,20 +189,20 @@
                                 <div class="flex justify-end items-center gap-2">
 
                                     <a href="{{ route('admin.activities.edit', $activity) }}"
-                                       class="px-3 py-1.5 rounded-lg border border-upp-surface-high text-upp-primary-container font-medium hover:bg-upp-surface-low transition">
+                                        class="px-3 py-1.5 rounded-lg border border-upp-surface-high text-upp-primary-container font-medium hover:bg-upp-surface-low transition">
                                         Editar
                                     </a>
 
                                     @if ($enrolled > 0)
                                         <!-- No se puede eliminar una actividad con alumnos inscritos -->
                                         <span class="px-3 py-1.5 rounded-lg text-gray-400 cursor-not-allowed"
-                                              title="Tiene alumnos inscritos">
+                                            title="Tiene alumnos inscritos">
                                             Eliminar
                                         </span>
                                     @else
                                         <form action="{{ route('admin.activities.destroy', $activity) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('¿Eliminar la actividad ' + @js($activity->title) + '?')">
+                                                method="POST"
+                                                onsubmit="return confirm('¿Eliminar la actividad ' + @js($activity->title) + '?')">
                                             @csrf
                                             @method('DELETE')
 
