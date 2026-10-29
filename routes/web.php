@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SpeakerController;
@@ -8,10 +9,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ResponsibleController;
 use Illuminate\Support\Facades\Route;
 
-// Página principal
-Route::get('/', function () {
-    return view('welcome');
-});
+// Página principal: portada del evento y catálogo público
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Dashboard: cada rol entra a su sección
 Route::get('/dashboard', function () {
