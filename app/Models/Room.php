@@ -11,6 +11,8 @@ class Room extends Model
 
     protected $fillable = ['name', 'capacity'];
 
+    protected $casts = ['capacity' => 'integer'];
+
     // Relación: Un aula tiene muchas actividades
     public function activities()
     {
