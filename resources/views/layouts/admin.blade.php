@@ -56,8 +56,7 @@
         ['label' => 'Panel General', 'route' => 'admin.home',               'active' => 'admin.home'],
         ['label' => 'Talleres',      'route' => 'admin.activities.index',   'active' => 'admin.activities.*'],
         ['label' => 'Asistencias',   'route' => 'admin.attendances.index',  'active' => 'admin.attendances.*'],
-        // Constancias de ponentes (módulo de Francisco, ruta admin.constancias)
-        ['label' => 'Certificados',  'route' => 'admin.constancias',        'active' => 'admin.constancias*'],
+        ['label' => 'Certificados',  'route' => 'admin.certificates.index', 'active' => 'admin.certificates.*'],
         ['label' => 'Reportes',      'route' => 'admin.reports.index',      'active' => 'admin.reports.*'],
     ];
 
@@ -66,6 +65,7 @@
         ['label' => 'Aulas',        'route' => 'admin.rooms.index',        'active' => 'admin.rooms.*'],
         ['label' => 'Ponentes',     'route' => 'admin.speakers.index',     'active' => 'admin.speakers.*'],
         ['label' => 'Responsables', 'route' => 'admin.responsibles.index', 'active' => 'admin.responsibles.*'],
+        ['label' => 'Administradores', 'route' => 'admin.administrators.index', 'active' => 'admin.administrators.*'],
     ];
 
     $gestionActiva = collect($gestion)->contains(fn ($item) => request()->routeIs($item['active']));

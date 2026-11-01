@@ -14,7 +14,8 @@
                 'ayuda' => 'Acceso para la coordinación del evento.',
                 'icon' => 'M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z'],
         ];
-        $perfilInicial = old('perfil', 'alumno');
+        // Perfil preseleccionado: el del intento anterior, el que llega desde la portada (?perfil=) o alumno
+        $perfilInicial = old('perfil', in_array(request('perfil'), array_keys($perfiles), true) ? request('perfil') : 'alumno');
     @endphp
 
     <div x-data="{ perfil: @js($perfilInicial), verPass: false, perfiles: @js($perfiles) }">

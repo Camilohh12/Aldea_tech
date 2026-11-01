@@ -16,7 +16,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('activities', function (Blueprint $table) {
-            $table->unsignedInteger('capacity')->nullable()->after('speaker_id');
+            // capacity también la agrega la migración del panel admin (2026_10_23);
+            // en bases donde esa corrió primero la columna ya existe
+            if (! Schema::hasColumn('activities', 'capacity')) {
+                $table->unsignedInteger('capacity')->nullable()->after('speaker_id');
+            }
             $table->string('checkin_token', 64)->nullable()->unique()->after('checkin_enabled');
         });
 

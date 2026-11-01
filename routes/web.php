@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
-use App\Http\Controllers\Admin\ConstanciasPonentesController;
+use App\Http\Controllers\Admin\AdministratorController;
+use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResponsibleController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SpeakerController;
@@ -125,15 +128,35 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         Route::resource('responsibles', ResponsibleController::class)
             ->except(['show']);
 
-        // Certificados: constancias de ponentes en PDF
-        Route::get('/constancias-ponentes', [ConstanciasPonentesController::class, 'index'])
-            ->name('constancias');
-        Route::get('/constancias-ponentes/{activity}/{speaker}/pdf', [ConstanciasPonentesController::class, 'download'])
-            ->name('constancias.pdf');
+        // CRUD de Administradores (cuentas con acceso al panel)
+        Route::resource('administrators', AdministratorController::class)
+            ->except(['show']);
 
-        // proximamente
-        // Asistencias
-        // Reportes
+        // Asistencias: el admin consulta (el responsable pasa lista)
+        Route::get('/asistencias', [AttendanceController::class, 'index'])
+            ->name('attendances.index');
+        Route::get('/asistencias/{activity}', [AttendanceController::class, 'show'])
+            ->name('attendances.show');
+        Route::get('/asistencias/{activity}/csv', [AttendanceController::class, 'export'])
+            ->name('attendances.export');
+
+        // Certificados de ponentes: lista, plantilla editable y PDF
+        Route::get('/certificados', [CertificateController::class, 'index'])
+            ->name('certificates.index');
+        Route::get('/certificados/plantilla', [CertificateController::class, 'editTemplate'])
+            ->name('certificates.template');
+        Route::put('/certificados/plantilla', [CertificateController::class, 'updateTemplate'])
+            ->name('certificates.template.update');
+        Route::get('/certificados/plantilla/muestra', [CertificateController::class, 'sample'])
+            ->name('certificates.sample');
+        Route::get('/certificados/{activity}/{speaker}/pdf', [CertificateController::class, 'download'])
+            ->name('certificates.download');
+
+        // Reportes: se ven en pantalla y se descargan en CSV
+        Route::get('/reportes', [ReportController::class, 'index'])
+            ->name('reports.index');
+        Route::get('/reportes/{reporte}/csv', [ReportController::class, 'export'])
+            ->name('reports.export');
     });
 
 // Rutas de autenticación
