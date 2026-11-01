@@ -7,15 +7,24 @@
     @endphp
 
     <!-- Encabezado -->
-    <div class="mb-6">
-        <p class="text-xs font-semibold uppercase tracking-widest text-upp-secondary">
-            Coordinación de Tutorías · <span class="text-upp-primary">Aldea Tecnológica 2026</span>
-        </p>
-        <h1 class="mt-2 font-heading text-2xl font-bold text-upp-primary sm:text-3xl">Supervisión y Seguimiento de Tutorados</h1>
-        <p class="mt-1 max-w-3xl text-sm text-gray-600">
-            Consulta las actividades, asistencias validadas y horas acumuladas de tus tutorados para la liberación curricular
-            (meta: {{ $fmt($meta) }} horas).
-        </p>
+    <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-upp-secondary">
+                Coordinación de Tutorías · <span class="text-upp-primary">Aldea Tecnológica 2026</span>
+            </p>
+            <h1 class="mt-2 font-heading text-2xl font-bold text-upp-primary sm:text-3xl">Supervisión y Seguimiento de Tutorados</h1>
+            <p class="mt-1 max-w-3xl text-sm text-gray-600">
+                Consulta las actividades, asistencias validadas y horas acumuladas de tus tutorados para la liberación curricular
+                (meta: {{ $fmt($meta) }} horas).
+            </p>
+        </div>
+
+        <!-- Reporte en PDF con la búsqueda y el estado elegidos -->
+        <a href="{{ route('tutor.tutorados.reporte', array_filter(['q' => $q, 'estado' => $estado])) }}"
+           class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-upp-primary-container px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-upp-primary">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14" /></svg>
+            Descargar reporte (PDF)
+        </a>
     </div>
 
     <!-- Indicadores -->

@@ -7,7 +7,9 @@ use App\Models\Activity;
 use App\Models\Enrollment;
 use App\Models\User;
 use App\Support\ProgresoTutorado;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -20,24 +22,10 @@ class TutoradosController extends Controller
 {
     public function index(Request $request): View
     {
-        $filtros = $request->validate([
-            'q' => ['nullable', 'string', 'max:100'],
-            'estado' => ['nullable', 'in:'.implode(',', array_keys(ProgresoTutorado::ESTADOS))],
-        ]);
-        $q = trim($filtros['q'] ?? '');
-        $estado = $filtros['estado'] ?? null;
+        [$q, $estado] = $this->filtros($request);
 
         $todos = $this->progresos($request->user());
-
-        // Búsqueda por nombre o matrícula y filtro por estado
-        $busqueda = Str::lower(Str::ascii($q));
-        $filtrados = $todos
-            ->when($busqueda !== '', fn (Collection $c) => $c->filter(fn (ProgresoTutorado $p) => Str::contains(
-                Str::lower(Str::ascii($p->alumno->name.' '.$p->alumno->matricula)),
-                $busqueda,
-            )))
-            ->when($estado, fn (Collection $c) => $c->filter(fn (ProgresoTutorado $p) => $p->estado === $estado))
-            ->values();
+        $filtrados = $this->filtrar($todos, $q, $estado);
 
         return view('tutor.index', [
             'q' => $q,
@@ -70,12 +58,80 @@ class TutoradosController extends Controller
         ]);
     }
 
+    /** Reporte de asistencia de los tutorados en PDF (respeta la búsqueda y el estado elegidos). */
+    public function reporte(Request $request): Response
+    {
+        [$q, $estado] = $this->filtros($request);
+        $tutor = $request->user();
+
+        $todos = $this->progresos($tutor, conDetalle: true);
+        $tutorados = $this->filtrar($todos, $q, $estado);
+        $escudo = public_path('img/escudo-upp.png');
+
+        $pdf = Pdf::loadView('pdf.reporte-tutorados', [
+            'tutor' => $tutor,
+            'tutorados' => $tutorados,
+            'filtro' => collect([$estado ? ProgresoTutorado::ESTADOS[$estado] : null, $q !== '' ? "«{$q}»" : null])->filter()->implode(' · '),
+            'resumen' => collect(ProgresoTutorado::ESTADOS)->map(fn ($etiqueta, $clave) => $tutorados->where('estado', $clave)->count()),
+            'meta' => (float) config('aldea.horas_liberacion', 20),
+            'generado' => now(),
+            // DomPDF necesita la extensión GD para las imágenes; sin ella el reporte sale sin escudo
+            'escudo' => extension_loaded('gd') && is_file($escudo)
+                ? 'data:image/png;base64,'.base64_encode(file_get_contents($escudo))
+                : null,
+        ])
+            ->setPaper('letter')
+            ->setOption('isFontSubsettingEnabled', true);
+
+        // Número de página en cada hoja, a la derecha del pie y con su mismo tamaño (7px = 5.25pt)
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $canvas = $dompdf->getCanvas();
+        $fuente = $dompdf->getFontMetrics()->getFont('DejaVu Sans');
+        $ancho = $dompdf->getFontMetrics()->getTextWidth('Página 00 de 00', $fuente, 5.25);
+        $canvas->page_text($canvas->get_width() - 28.5 - $ancho, 770, 'Página {PAGE_NUM} de {PAGE_COUNT}',
+            $fuente, 5.25, [0.42, 0.42, 0.5]);
+
+        $archivo = 'Reporte-tutorados-'.Str::slug($tutor->name).'-'.now()->format('Y-m-d').'.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$archivo.'"',
+        ]);
+    }
+
+    /** @return array{0: string, 1: ?string} Búsqueda y estado de la URL */
+    private function filtros(Request $request): array
+    {
+        $filtros = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'estado' => ['nullable', 'in:'.implode(',', array_keys(ProgresoTutorado::ESTADOS))],
+        ]);
+
+        return [trim($filtros['q'] ?? ''), $filtros['estado'] ?? null];
+    }
+
+    /** Búsqueda por nombre o matrícula y filtro por estado. */
+    private function filtrar(Collection $todos, string $q, ?string $estado): Collection
+    {
+        $busqueda = Str::lower(Str::ascii($q));
+
+        return $todos
+            ->when($busqueda !== '', fn (Collection $c) => $c->filter(fn (ProgresoTutorado $p) => Str::contains(
+                Str::lower(Str::ascii($p->alumno->name.' '.$p->alumno->matricula)),
+                $busqueda,
+            )))
+            ->when($estado, fn (Collection $c) => $c->filter(fn (ProgresoTutorado $p) => $p->estado === $estado))
+            ->values();
+    }
+
     /** @return Collection<int, ProgresoTutorado> */
-    private function progresos(User $tutor): Collection
+    private function progresos(User $tutor, bool $conDetalle = false): Collection
     {
         return User::role('alumno')
             ->where('tutor_id', $tutor->id)
             ->with(['enrollments.activity.activityType', 'enrollments.activity.room'])
+            ->when($conDetalle, fn ($query) => $query->with('enrollments.checkedInBy'))
             ->orderBy('name')
             ->get()
             ->map(fn (User $alumno) => new ProgresoTutorado($alumno));

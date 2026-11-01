@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResponsibleController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SpeakerController;
+use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\Alumno\AgendaController;
 use App\Http\Controllers\Alumno\CatalogoController;
 use App\Http\Controllers\Alumno\InscripcionController;
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'role:tutor'])
     ->name('tutor.')
     ->group(function () {
         Route::get('/tutorados', [TutoradosController::class, 'index'])->name('tutorados');
+        Route::get('/tutorados/reporte', [TutoradosController::class, 'reporte'])->name('tutorados.reporte');
         Route::get('/tutorados/{alumno}', [TutoradosController::class, 'show'])
             ->whereNumber('alumno')->name('tutorados.show');
     });
@@ -127,6 +129,16 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         // CRUD de Responsables (usuarios con rol "responsable")
         Route::resource('responsibles', ResponsibleController::class)
             ->except(['show']);
+
+        // CRUD de Tutores (usuarios con rol "tutor") y asignación de sus alumnos
+        Route::resource('tutors', TutorController::class)
+            ->except(['show']);
+        Route::get('/tutors/{tutor}/alumnos', [TutorController::class, 'students'])
+            ->name('tutors.students');
+        Route::post('/tutors/{tutor}/alumnos', [TutorController::class, 'assign'])
+            ->name('tutors.students.assign');
+        Route::delete('/tutors/{tutor}/alumnos/{alumno}', [TutorController::class, 'unassign'])
+            ->whereNumber('alumno')->name('tutors.students.unassign');
 
         // CRUD de Administradores (cuentas con acceso al panel)
         Route::resource('administrators', AdministratorController::class)
