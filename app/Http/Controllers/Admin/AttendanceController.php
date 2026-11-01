@@ -115,7 +115,7 @@ class AttendanceController extends Controller
 
             // Marca UTF-8 para que Excel muestre bien los acentos
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Alumno', 'Correo', 'Matrícula', 'Carrera', 'Asistió', 'Hora de registro']);
+            fputcsv($out, ['Alumno', 'Correo', 'Matrícula', 'Carrera', 'Asistió', 'Hora de registro', 'Registró']);
 
             foreach ($rows as $row) {
                 fputcsv($out, [
@@ -125,6 +125,7 @@ class AttendanceController extends Controller
                     $row->carrera,
                     $row->attended ? 'Sí' : 'No',
                     $row->checkin_time ? Carbon::parse($row->checkin_time)->format('d/m/Y H:i') : '',
+                    $row->attended ? ($row->checked_in_by_name ?? '') : '',
                 ]);
             }
 
@@ -133,10 +134,12 @@ class AttendanceController extends Controller
     }
 
     // Inscripciones activas de la actividad con los datos del alumno
+    // y de quién registró su asistencia (checked_in_by)
     private function participants(Activity $activity)
     {
         return DB::table('enrollments')
             ->join('users', 'users.id', '=', 'enrollments.user_id')
+            ->leftJoin('users as staff', 'staff.id', '=', 'enrollments.checked_in_by')
             ->where('enrollments.activity_id', $activity->id)
             ->where('enrollments.status', 'registered')
             ->select(
@@ -146,7 +149,8 @@ class AttendanceController extends Controller
                 'users.carrera',
                 'enrollments.attended',
                 'enrollments.checkin_time',
-                'enrollments.created_at as enrolled_at'
+                'enrollments.created_at as enrolled_at',
+                'staff.name as checked_in_by_name'
             );
     }
 

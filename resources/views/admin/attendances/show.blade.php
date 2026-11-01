@@ -198,6 +198,9 @@
                                             · {{ \Illuminate\Support\Carbon::parse($participant->checkin_time)->format('H:i') }}
                                         @endif
                                     </span>
+                                    @if ($participant->checked_in_by_name)
+                                        <p class="mt-1 text-xs text-gray-500">Registró: {{ $participant->checked_in_by_name }}</p>
+                                    @endif
                                 @elseif ($activity->estado === 'finalizada')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
