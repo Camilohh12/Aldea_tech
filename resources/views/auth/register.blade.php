@@ -84,6 +84,28 @@
                 </div>
             </div>
 
+            {{-- Tutor académico (aparece cuando la coordinación ya registró tutores) --}}
+            @if ($tutores->isNotEmpty())
+                <div>
+                    <label for="tutor_id" class="text-sm font-semibold">Tutor académico <span class="text-red-600">*</span></label>
+                    <div class="relative mt-1.5">
+                        <x-icono name="persona" :class="$icono" />
+                        <select id="tutor_id" name="tutor_id" required class="{{ $input }}">
+                            <option value="" disabled @selected(! old('tutor_id'))>Selecciona a tu tutor…</option>
+                            @foreach ($tutores->groupBy(fn ($tutor) => $tutor->carrera ?: 'Otros tutores')->sortKeys() as $grupo => $lista)
+                                <optgroup label="{{ $grupo }}">
+                                    @foreach ($lista as $tutor)
+                                        <option value="{{ $tutor->id }}" @selected((string) old('tutor_id') === (string) $tutor->id)>{{ $tutor->name }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+                    <p class="mt-1.5 text-xs text-slate-500">Quien da seguimiento a tus horas. Si no sabes quién es, pregúntalo en tu coordinación de carrera.</p>
+                    <x-input-error :messages="$errors->get('tutor_id')" class="mt-1.5" />
+                </div>
+            @endif
+
             {{-- Correo --}}
             <div>
                 <div class="flex items-center justify-between">

@@ -22,7 +22,16 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        // Tutores para que el alumno elija al suyo (agrupados por carrera en la vista)
+        return view('auth.register', [
+            'tutores' => $this->tutores()->orderBy('name')->get(['id', 'name', 'carrera']),
+        ]);
+    }
+
+    /** Cuentas con rol de tutor (sin fallar si el rol aún no existe). */
+    private function tutores()
+    {
+        return User::whereHas('roles', fn ($query) => $query->where('name', 'tutor'));
     }
 
     /**
@@ -34,11 +43,19 @@ class RegisteredUserController extends Controller
     {
         $dominio = preg_quote(config('aldea.dominio_correo'), '/');
 
+        // El tutor es obligatorio en cuanto la coordinación haya registrado tutores
+        $hayTutores = $this->tutores()->exists();
+
         $request->validate([
             'matricula' => ['required', 'digits:9', 'unique:'.User::class],
             'name' => ['required', 'string', 'max:255'],
             'carrera' => ['required', 'string', Rule::in(config('aldea.carreras'))],
             'cuatrimestre' => ['required', Rule::in(config('aldea.cuatrimestres'))],
+            'tutor_id' => ['bail', $hayTutores ? 'required' : 'nullable', 'integer', function ($attribute, $value, $fail) {
+                if (! $this->tutores()->whereKey($value)->exists()) {
+                    $fail('Selecciona a tu tutor de la lista.');
+                }
+            }],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class,
                 "regex:/@([a-z0-9-]+\\.)*{$dominio}$/"],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -48,6 +65,8 @@ class RegisteredUserController extends Controller
             'matricula.unique' => 'Esa matrícula ya tiene una cuenta. Inicia sesión.',
             'email.regex' => 'Usa tu correo institucional (@'.config('aldea.dominio_correo').').',
             'email.unique' => 'Ese correo ya tiene una cuenta. Inicia sesión.',
+            'tutor_id.required' => 'Selecciona a tu tutor académico.',
+            'tutor_id.integer' => 'Selecciona a tu tutor de la lista.',
             'acepto.accepted' => 'Debes aceptar el reglamento y el aviso de privacidad.',
         ]);
 
@@ -57,6 +76,7 @@ class RegisteredUserController extends Controller
             'carrera' => $request->carrera,
             'cuatrimestre' => (string) $request->cuatrimestre,
             'estatus' => $request->cuatrimestre === 'Irregular' ? 'irregular' : 'regular',
+            'tutor_id' => $request->tutor_id ?: null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

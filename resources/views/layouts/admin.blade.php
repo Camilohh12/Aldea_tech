@@ -65,6 +65,7 @@
         ['label' => 'Aulas',        'route' => 'admin.rooms.index',        'active' => 'admin.rooms.*'],
         ['label' => 'Ponentes',     'route' => 'admin.speakers.index',     'active' => 'admin.speakers.*'],
         ['label' => 'Responsables', 'route' => 'admin.responsibles.index', 'active' => 'admin.responsibles.*'],
+        ['label' => 'Tutores',      'route' => 'admin.tutors.index',       'active' => 'admin.tutors.*'],
         ['label' => 'Administradores', 'route' => 'admin.administrators.index', 'active' => 'admin.administrators.*'],
     ];
 
