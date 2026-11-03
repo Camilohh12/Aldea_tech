@@ -1,8 +1,10 @@
 # Despliegue de Aldea Tecnológica
 
-Guía para publicar el sistema en un servidor con HTTPS antes del evento (24–26 de noviembre de 2026).
-Sirve para un servidor de la UPP, una máquina virtual de Azure o un VPS: en todos los casos es un
-servidor **Ubuntu 24.04** con Nginx, PHP 8.3 y MySQL.
+Guía para publicar el sistema con HTTPS antes del evento (24–26 de noviembre de 2026).
+Hay dos caminos:
+
+- **Opción A: Railway.** Plataforma administrada: se conecta al repositorio de GitHub y publica sola cada cambio en `main`. No hay servidor que mantener.
+- **Opción B: servidor Ubuntu 24.04.** Un servidor de la UPP, una VM de Azure o un VPS, con Nginx, PHP 8.3 y MySQL instalados a mano.
 
 > El HTTPS es obligatorio: sin él los navegadores bloquean la cámara del pase de lista con QR.
 
@@ -12,41 +14,148 @@ servidor **Ubuntu 24.04** con Nginx, PHP 8.3 y MySQL.
 
 | Opción | Costo aproximado | Ventajas | Desventajas |
 |---|---|---|---|
-| **Servidor de la UPP** | Gratis | Dominio institucional (`aldea.upp.edu.mx`), confianza de los alumnos | Depende de que TI lo asigne a tiempo |
-| **Azure for Students** | Gratis (USD 100 de crédito, sin tarjeta) | Infraestructura de Microsoft; VM Linux y MySQL gratis 12 meses | Configuración más larga; requiere ser alumno de tiempo completo con correo escolar |
-| **Hetzner Cloud** | ~€6.5 al mes + IVA, cobro por hora | Rápido, estable, servidores en EE. UU.; se borra al terminar el evento | Requiere tarjeta |
+| **Railway (Hobby)** | USD 5 al mes, que incluyen USD 5 de consumo; app + MySQL rondan USD 5–10 al mes | HTTPS y MySQL incluidos; se publica solo desde GitHub; sin servidor que actualizar | Requiere tarjeta; bloquea el correo SMTP (ver 3.1) |
+| **Servidor de la UPP** | Gratis | Dominio institucional, confianza de los alumnos | Depende de que TI lo asigne a tiempo; hay que administrarlo |
+| **Azure for Students** | Gratis (USD 100 de crédito, sin tarjeta) | VM Linux y MySQL gratis 12 meses | Configuración más larga; hay que administrar el servidor |
+| **Hetzner Cloud** | ~€6.5 al mes + IVA, cobro por hora | Rápido y estable | Requiere tarjeta; hay que administrar el servidor |
 | Hosting compartido | ~USD 3 al mes pagando varios años | Barato | Límites de CPU en los picos de inscripción y del pase de lista; no recomendado |
 
 Precios consultados en octubre de 2026; confírmalos antes de contratar.
-El crédito de DigitalOcean del GitHub Student Pack terminó el 31 de julio de 2026.
 
-**Recomendación:**
+- La prueba gratis de Railway (USD 5, 30 días, sin tarjeta) sirve para probar, pero no alcanza a cubrir el evento: hay que pasar al plan Hobby antes del 24 de noviembre.
+- El crédito de DigitalOcean del GitHub Student Pack terminó el 31 de julio de 2026.
 
-1. Pedir a TI de la UPP el subdominio `aldea.upp.edu.mx` en cualquier caso, y preguntar si tienen un servidor o VM disponible.
-2. Si no hay servidor: **Azure for Students** con una VM Ubuntu 24.04 tamaño **B2s** (2 vCPU, 4 GB). Cuesta unos USD 30 al mes, así que el crédito cubre el evento.
-   Para que dure todo el año, la VM **B1s** es gratis, pero tiene 1 GB de RAM y requiere memoria swap.
-3. Si prefieren pagar algo simple: Hetzner Cloud, del tamaño más chico con 4 GB de RAM.
-
-Para el evento basta con **2 vCPU y 4 GB de RAM**.
+En cualquier opción conviene pedir a TI el subdominio `aldea.upp.edu.mx`.
 
 ---
 
 ## 2. Qué pedir a TI de la UPP
 
-- **DNS:** un registro `A` de `aldea.upp.edu.mx` hacia la IP pública del servidor.
-- **Correo:** UPP usa Google Workspace. Hace falta una cuenta dedicada (por ejemplo `aldea.tecnologica@upp.edu.mx`) y alguna de estas dos opciones:
-  - una **contraseña de aplicación** de esa cuenta (requiere verificación en dos pasos, y que el administrador del dominio lo permita);
-  - o que habiliten el **SMTP relay** de Google Workspace para la IP del servidor.
+- **DNS:** que `aldea.upp.edu.mx` apunte al sitio.
+  - En Railway es un registro `CNAME`, más un `TXT` de verificación; Railway muestra los valores exactos al agregar el dominio.
+  - En un servidor propio es un registro `A` hacia su IP pública.
+- **Correo:** UPP usa Google Workspace. Lo que hay que pedir depende del camino:
+  - **Railway Hobby:** registros DNS de un servicio de correo por API (ver 3.1).
+  - **Railway Pro o servidor propio:** una cuenta dedicada (por ejemplo `aldea.tecnologica@upp.edu.mx`) con **contraseña de aplicación**, o el **SMTP relay** de Google Workspace.
 
 Sin correo, el enlace «¿Olvidaste tu contraseña?» no llega a los alumnos.
 
 ---
 
-## 3. Preparar el servidor (una sola vez)
+## 3. Opción A: Railway
+
+El repositorio ya trae `railway.json`, que configura:
+
+- la compilación con Railpack;
+- la revisión de salud en `/up`;
+- el reinicio automático si la app falla.
+
+Railpack detecta Laravel e instala las dependencias de PHP. Además compila los estilos con `npm run build`, guarda la caché y corre las migraciones al arrancar.
+
+### 3.1 Correo en Railway
+
+Los planes Free, Trial y Hobby de Railway **bloquean los puertos SMTP** (25, 465 y 587), así que Gmail por SMTP no funciona ahí. Hay tres salidas:
+
+1. **Plan Pro** (USD 20 al mes, con USD 20 de consumo incluido): permite SMTP con la cuenta institucional. Se puede contratar solo para noviembre.
+2. **Servicio de correo por API**, como Resend (gratis hasta 3,000 correos al mes). TI agrega unos registros DNS para enviar desde `@upp.edu.mx`, y la app necesita un cambio pequeño para usarlo.
+3. **Sin correo:** se oculta «¿Olvidaste tu contraseña?» y la coordinación restablece contraseñas desde el panel. Esto también requiere un cambio en la app.
+
+### 3.2 Crear el proyecto
+
+1. Entra a [railway.com](https://railway.com) con la cuenta de GitHub dueña del repositorio y contrata el plan Hobby.
+2. En **Workspace › Usage**, pon un límite de gasto (por ejemplo USD 15) para evitar sorpresas.
+3. **New Project › Deploy from GitHub repo ›** `Camilohh12/Aldea_tech`.
+4. En el mismo proyecto: **+ Create › Database › MySQL**.
+5. En el servicio de la app: **Settings › Networking › Generate Domain**. Railway da una dirección `https://….up.railway.app` con candado.
+
+### 3.3 Variables de la app
+
+En tu computadora genera la llave de la app (cópiala completa, incluido `base64:`):
+
+```bash
+php artisan key:generate --show
+```
+
+En el servicio de la app: **Variables › Raw Editor**. Pega esto y reemplaza `APP_KEY`:
+
+```env
+APP_NAME="Aldea Tecnológica UPP"
+APP_ENV=production
+APP_KEY=base64:PEGAR-AQUI
+APP_DEBUG=false
+APP_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
+APP_LOCALE=es
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=es_MX
+TRUSTED_PROXIES=*
+LOG_CHANNEL=stderr
+LOG_LEVEL=warning
+DB_CONNECTION=mysql
+DB_URL=${{MySQL.MYSQL_URL}}
+SESSION_DRIVER=database
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true
+CACHE_STORE=database
+QUEUE_CONNECTION=sync
+RAILPACK_PHP_EXTENSIONS=gd
+```
+
+- `TRUSTED_PROXIES=*` es necesario: Railway atiende el HTTPS y le pasa la visita a la app.
+- `RAILPACK_PHP_EXTENSIONS=gd` hace que el escudo aparezca en los PDF.
+- Las variables de correo se agregan según la salida elegida en 3.1.
+
+### 3.4 Publicar
+
+1. Al guardar las variables, Railway compila y publica. En **Deployments › View logs** debe terminar sin errores, y `https://…/up` debe responder.
+2. Crea el Super Admin desde tu computadora con la CLI de Railway:
+
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   railway link
+   railway ssh
+   ```
+
+   Dentro de la sesión (elige el servicio de la app si pregunta):
+
+   ```bash
+   php artisan db:seed --class=ProduccionSeeder --force
+   ```
+
+   No corras `ModuloAlumnoSeeder` en producción: crea datos de prueba con contraseñas conocidas.
+
+### 3.5 Dominio propio
+
+Cuando TI pueda configurarlo:
+
+1. **Settings › Networking › Custom Domain ›** `aldea.upp.edu.mx`.
+2. Pásale a TI los registros `CNAME` y `TXT` que muestra Railway.
+3. Cambia la variable `APP_URL` a `https://aldea.upp.edu.mx`.
+
+### 3.6 Actualizaciones
+
+Cada merge a `main` se publica solo. Durante el evento (23–27 de noviembre) **no hagan merge a `main`**, salvo correcciones urgentes ya probadas. Si hace falta, el despliegue automático se pausa en **Settings › Source**.
+
+### 3.7 Respaldos
+
+Railway no respalda la base por su cuenta en el plan Hobby. Hazlo desde tu computadora con el `mysqldump` de XAMPP:
+
+1. En el servicio MySQL, ve a **Variables** y copia los datos de `MYSQL_PUBLIC_URL`: host, puerto y contraseña.
+2. Corre lo siguiente:
+
+   ```bash
+   C:\xampp\mysql\bin\mysqldump.exe -h HOST -P PUERTO -u root -p --single-transaction railway > respaldo-aldea.sql
+   ```
+
+Haz uno diario antes del evento y varios al día durante el evento. Guárdalos fuera de tu computadora, por ejemplo en Drive.
+
+---
+
+## 4. Opción B: servidor Ubuntu (una sola vez)
 
 Conéctate por SSH con un usuario que tenga `sudo` (no `root`).
 
-### 3.1 Seguridad básica
+### 4.1 Seguridad básica
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -68,7 +177,7 @@ sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-### 3.2 Paquetes
+### 4.2 Paquetes
 
 ```bash
 sudo apt install -y nginx mysql-server git unzip certbot python3-certbot-nginx \
@@ -86,7 +195,7 @@ sudo apt install -y nodejs
 
 `php8.3-gd` es necesario para que el escudo aparezca en los certificados y en el reporte del tutor.
 
-### 3.3 Base de datos
+### 4.3 Base de datos
 
 ```bash
 sudo mysql_secure_installation
@@ -111,7 +220,7 @@ user=aldea
 password=CAMBIAR-contraseña-larga
 ```
 
-### 3.4 Código
+### 4.4 Código
 
 Si el repositorio es privado, agrega una *deploy key* (llave SSH de solo lectura) en GitHub › Settings › Deploy keys.
 
@@ -137,7 +246,7 @@ sudo chmod -R ug+rwX storage bootstrap/cache
 
 No corras `ModuloAlumnoSeeder` en producción: crea datos de prueba con contraseñas conocidas.
 
-### 3.5 Nginx
+### 4.5 Nginx
 
 Crea `/etc/nginx/sites-available/aldea`:
 
@@ -180,7 +289,7 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### 3.6 HTTPS (Let's Encrypt, gratis)
+### 4.6 HTTPS (Let's Encrypt, gratis)
 
 Cuando el subdominio ya apunte a la IP del servidor:
 
@@ -190,7 +299,7 @@ sudo certbot --nginx -d aldea.upp.edu.mx --redirect
 
 Certbot renueva el certificado solo. Para comprobarlo: `sudo certbot renew --dry-run`.
 
-### 3.7 Respaldos automáticos
+### 4.7 Respaldos automáticos
 
 ```bash
 mkdir -p ~/respaldos
@@ -207,9 +316,7 @@ Agrega estas líneas: respaldo cada hora del 23 al 27 de noviembre, diario el re
 
 Copia de vez en cuando la carpeta `~/respaldos` fuera del servidor, por ejemplo a Drive.
 
----
-
-## 4. Actualizar el sitio
+### 4.8 Actualizar el servidor
 
 Cada vez que se haga merge a `main`:
 
@@ -232,8 +339,8 @@ Si se edita el `.env`, corre `php artisan optimize` para que tome los cambios.
 
 ## 5. Lista de verificación antes de anunciarlo
 
-- [ ] `https://aldea.upp.edu.mx` abre con candado y `http://` redirige a `https://`.
-- [ ] `https://aldea.upp.edu.mx/up` responde con una página verde.
+- [ ] La dirección del sitio abre con candado y `http://` redirige a `https://`.
+- [ ] `/up` responde con una página verde.
 - [ ] Una dirección inexistente muestra «Página no encontrada», no el detalle del error.
 - [ ] El Super Admin inicia sesión y ve el panel.
 - [ ] Están registrados los tutores, aulas, ponentes, responsables y actividades.
