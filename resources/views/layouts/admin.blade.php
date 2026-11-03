@@ -12,33 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind con los colores institucionales de Figma (los mismos de tailwind.config.js) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        upp: {
-                            primary: '#340158',
-                            'primary-container': '#4B1F6F',
-                            'on-primary-container': '#BA8BE1',
-                            'primary-fixed-dim': '#E0B7FF',
-                            secondary: '#6F528A',
-                            'secondary-container': '#E2BEFF',
-                            surface: '#FEF7FF',
-                            'surface-low': '#F9F0FF',
-                            'surface-high': '#EEE5F6',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                        heading: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
+    <!-- Estilos compilados con Vite (colores institucionales en tailwind.config.js), sin depender de un CDN -->
+    @vite('resources/css/admin.css')
 
     <style>
         /* Oculta el triángulo por defecto de <summary> en los menús desplegables */

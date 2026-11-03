@@ -1,0 +1,6 @@
+/* Portada y panel de administración (ver tailwind.admin.config.js) */
+@config "../../tailwind.admin.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
