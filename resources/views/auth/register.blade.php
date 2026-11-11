@@ -6,9 +6,10 @@
         $input = 'w-full rounded-xl border-slate-200 py-2.5 pl-10 text-sm placeholder:text-slate-400 focus:border-aldea-500 focus:ring-aldea-500';
         $icono = 'pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-aldea-600';
         $dominio = config('aldea.dominio_correo');
+        $digitos = config('aldea.matricula_digitos');
     @endphp
 
-    <div x-data="{ verPass: false, verConf: false }">
+    <div x-data="{ verPass: false, verConf: false, pass: '' }">
         {{-- Encabezado --}}
         <div class="text-center">
             <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-aldea-900 shadow-lg shadow-aldea-900/20 ring-4 ring-aldea-100">
@@ -30,12 +31,15 @@
                 <div>
                     <div class="flex items-center justify-between">
                         <label for="matricula" class="text-sm font-semibold">Matrícula <span class="text-red-600">*</span></label>
-                        <span class="text-xs text-slate-500">9 dígitos</span>
+                        <span class="text-xs text-slate-500">{{ $digitos }} dígitos</span>
                     </div>
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
-                        <input id="matricula" name="matricula" type="text" inputmode="numeric" maxlength="9" pattern="\d{9}"
-                               value="{{ old('matricula') }}" required autofocus placeholder="Ej. 202308492" class="{{ $input }}">
+                        <input id="matricula" name="matricula" type="text" inputmode="numeric" autocomplete="off"
+                               minlength="{{ $digitos }}" maxlength="{{ $digitos }}" pattern="{{ '[0-9]{'.$digitos.'}' }}"
+                               title="La matrícula debe tener {{ $digitos }} dígitos, sin espacios ni letras."
+                               value="{{ old('matricula') }}" required autofocus placeholder="Ej. 2023084921" class="{{ $input }}"
+                               x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')">
                     </div>
                     <x-input-error :messages="$errors->get('matricula')" class="mt-1.5" />
                 </div>
@@ -46,19 +50,23 @@
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
                         <input id="name" name="name" type="text" value="{{ old('name') }}" required autocomplete="name"
+                               maxlength="{{ \App\Support\ReglasAlumno::NOMBRE_MAX }}" pattern="{{ \App\Support\ReglasAlumno::patronNombreHtml() }}"
+                               title="Solo letras, espacios, puntos, apóstrofos y guiones (máximo {{ \App\Support\ReglasAlumno::NOMBRE_MAX }})."
                                placeholder="Ej. Valeria Martínez Solís" class="{{ $input }}">
                     </div>
                     <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
                 </div>
             </div>
 
-            <div class="grid gap-5 sm:grid-cols-[1fr_10rem]">
+            {{-- Carrera, cuatrimestre y grupo: el código del grupo (sftw_01_09) se arma solo --}}
+            <div x-data="grupoAlumno(@js(old('carrera', '')), @js((string) old('cuatrimestre', '')), @js((string) old('grupo', '')), @js(config('aldea.prefijos_grupo')))">
+            <div class="grid gap-5 sm:grid-cols-[1fr_9rem_7rem]">
                 {{-- Carrera --}}
                 <div>
                     <label for="carrera" class="text-sm font-semibold">Carrera / Programa <span class="text-red-600">*</span></label>
                     <div class="relative mt-1.5">
                         <x-icono name="birrete" :class="$icono" />
-                        <select id="carrera" name="carrera" required class="{{ $input }}">
+                        <select id="carrera" name="carrera" required x-model="carrera" class="{{ $input }}">
                             <option value="" disabled @selected(! old('carrera'))>Selecciona tu carrera…</option>
                             @foreach (config('aldea.carreras') as $carrera)
                                 <option value="{{ $carrera }}" @selected(old('carrera') === $carrera)>{{ $carrera }}</option>
@@ -73,7 +81,7 @@
                     <label for="cuatrimestre" class="text-sm font-semibold">Cuatrimestre <span class="text-red-600">*</span></label>
                     <div class="relative mt-1.5">
                         <x-icono name="calendario" :class="$icono" />
-                        <select id="cuatrimestre" name="cuatrimestre" required class="{{ $input }}">
+                        <select id="cuatrimestre" name="cuatrimestre" required x-model="cuatrimestre" class="{{ $input }}">
                             <option value="" disabled @selected(! old('cuatrimestre'))>Nivel</option>
                             @foreach (config('aldea.cuatrimestres') as $c)
                                 <option value="{{ $c }}" @selected((string) old('cuatrimestre') === (string) $c)>{{ is_numeric($c) ? $c.'°' : $c }}</option>
@@ -82,6 +90,22 @@
                     </div>
                     <x-input-error :messages="$errors->get('cuatrimestre')" class="mt-1.5" />
                 </div>
+
+                {{-- Grupo: solo el número --}}
+                <div>
+                    <label for="grupo" class="text-sm font-semibold">Grupo <span class="text-red-600" x-show="!delTutor">*</span></label>
+                    <div class="relative mt-1.5">
+                        <x-icono name="persona" :class="$icono" />
+                        <input id="grupo" name="grupo" type="text" inputmode="numeric" autocomplete="off" maxlength="2"
+                               pattern="0?[1-9]|[1-9][0-9]" title="Escribe solo el número de tu grupo, por ejemplo 1."
+                               value="{{ old('grupo') }}" x-model="grupo" required
+                               :required="!delTutor" :disabled="delTutor" :placeholder="!delTutor ? 'Ej. 1' : 'Tutor'"
+                               placeholder="Ej. 1" class="{{ $input }} disabled:bg-slate-50 disabled:text-slate-400">
+                    </div>
+                    <x-input-error :messages="$errors->get('grupo')" class="mt-1.5" />
+                </div>
+            </div>
+            @include('auth.partials.ayuda-grupo')
             </div>
 
             {{-- Tutor académico (aparece cuando la coordinación ya registró tutores) --}}
@@ -115,6 +139,8 @@
                 <div class="relative mt-1.5">
                     <svg class="{{ $icono }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18v12H3zM3 7l9 6 9-6"/></svg>
                     <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email"
+                           maxlength="255" pattern="{{ \App\Support\ReglasAlumno::patronCorreoHtml() }}"
+                           title="Usa tu correo institucional ({{ '@'.$dominio }})."
                            placeholder="nombre.apellido{{ '@'.$dominio }}" class="{{ $input }}">
                 </div>
                 <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
@@ -127,12 +153,22 @@
                     <div class="relative mt-1.5">
                         <x-icono name="candado" :class="$icono" />
                         <input id="password" name="password" :type="verPass ? 'text' : 'password'" type="password" required autocomplete="new-password"
-                               placeholder="Mínimo 8 caracteres" class="{{ $input }} pr-11">
+                               minlength="{{ \App\Support\ReglasAlumno::CONTRASENA_MIN }}" pattern="{{ \App\Support\ReglasAlumno::patronContrasenaHtml() }}"
+                               title="Mínimo {{ \App\Support\ReglasAlumno::CONTRASENA_MIN }} caracteres con al menos una mayúscula."
+                               x-model="pass" placeholder="Mínimo 6, con una mayúscula" class="{{ $input }} pr-11">
                         <button type="button" @click="verPass = !verPass" aria-label="Mostrar u ocultar contraseña"
                                 class="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-500 hover:bg-aldea-50">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z"/></svg>
                         </button>
                     </div>
+                    <ul class="mt-1.5 space-y-0.5 text-xs" aria-live="polite">
+                        <li :class="pass.length >= {{ \App\Support\ReglasAlumno::CONTRASENA_MIN }} ? 'text-emerald-700' : 'text-slate-500'">
+                            <span x-text="pass.length >= {{ \App\Support\ReglasAlumno::CONTRASENA_MIN }} ? '✓' : '•'">•</span> Al menos {{ \App\Support\ReglasAlumno::CONTRASENA_MIN }} caracteres
+                        </li>
+                        <li :class="/\p{Lu}/u.test(pass) ? 'text-emerald-700' : 'text-slate-500'">
+                            <span x-text="/\p{Lu}/u.test(pass) ? '✓' : '•'">•</span> Una letra mayúscula
+                        </li>
+                    </ul>
                     <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
                 </div>
 
@@ -157,9 +193,10 @@
                 <label class="flex items-start gap-2.5 text-sm text-slate-600">
                     <input type="checkbox" name="acepto" value="1" @checked(old('acepto')) required
                            class="mt-0.5 rounded border-slate-300 text-aldea-700 focus:ring-aldea-500">
+                    {{-- Las ligas se configuran en .env (ALDEA_URL_REGLAMENTO y ALDEA_URL_AVISO_PRIVACIDAD) --}}
                     <span>
-                        Acepto el <strong class="text-aldea-800">Reglamento de Participación</strong> y el
-                        <strong class="text-aldea-800">Aviso de Privacidad</strong> de la UPP para la acreditación curricular
+                        Acepto el @include('auth.partials.documento', ['nombre' => 'Reglamento de Participación', 'url' => config('aldea.enlaces.reglamento')]) y el
+                        @include('auth.partials.documento', ['nombre' => 'Aviso de Privacidad', 'url' => config('aldea.enlaces.aviso_privacidad')]) de la UPP para la acreditación curricular
                         y el control de asistencia en Aldea Tecnológica.
                     </span>
                 </label>

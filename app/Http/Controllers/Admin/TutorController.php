@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,13 +11,15 @@ use Illuminate\Validation\Rule;
 
 class TutorController extends Controller
 {
+    use LeeFiltros;
+
     // Rol que identifica a los tutores académicos
     private const ROLE = 'tutor';
 
     // Mostrar todos los tutores (con búsqueda por nombre o correo)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
+        $search = $this->filtroTexto($request, 'q');
 
         $tutors = User::role(self::ROLE)
             ->with('roles')
@@ -210,10 +213,10 @@ class TutorController extends Controller
         $cuatrimestre = $request->input('cuatrimestre');
 
         return [
-            'q' => trim((string) $request->input('q', '')),
+            'q' => $this->filtroTexto($request, 'q'),
             'carrera' => in_array($carrera, config('aldea.carreras'), true) ? $carrera : null,
             'cuatrimestre' => in_array($cuatrimestre, config('aldea.cuatrimestres'), true) ? $cuatrimestre : null,
-            'mostrar' => $request->input('mostrar') === 'todos' ? 'todos' : 'sin_tutor',
+            'mostrar' => $this->filtroOpcion($request, 'mostrar', ['todos', 'sin_tutor'], 'sin_tutor'),
         ];
     }
 

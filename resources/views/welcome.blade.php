@@ -12,33 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind con los colores institucionales de Figma -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        upp: {
-                            primary: '#340158',
-                            'primary-container': '#4B1F6F',
-                            'on-primary-container': '#BA8BE1',
-                            'primary-fixed-dim': '#E0B7FF',
-                            secondary: '#6F528A',
-                            'secondary-container': '#E2BEFF',
-                            surface: '#FEF7FF',
-                            'surface-low': '#F9F0FF',
-                            'surface-high': '#EEE5F6',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                        heading: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
+    <!-- Estilos compilados con Vite (colores institucionales en tailwind.config.js), sin depender de un CDN -->
+    @vite(['resources/css/admin.css', 'resources/js/filtros-limpios.js'])
 </head>
 
 <body class="bg-upp-surface font-sans text-[#1C1B1F] antialiased">
@@ -122,7 +97,7 @@
 
                     <div class="flex flex-col sm:flex-row gap-3 mt-8">
                         <a href="#catalogo"
-                           class="inline-flex items-center justify-center gap-2 bg-upp-primary-container hover:bg-upp-primary text-white px-6 py-3.5 rounded-lg font-semibold shadow-sm transition">
+                           class="inline-flex items-center justify-center gap-2 bg-upp-primary-container hover:bg-upp-primary-dark text-white px-6 py-3.5 rounded-lg font-semibold shadow-sm transition">
                             Ver el catálogo
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -225,7 +200,7 @@
                         </p>
                         <div class="flex flex-col sm:flex-row gap-3 mt-6">
                             <a href="{{ $loggedIn ? route('dashboard') : $alumnoUrl }}"
-                               class="inline-flex justify-center bg-upp-primary-container hover:bg-upp-primary text-white px-5 py-3 rounded-lg font-semibold transition">
+                               class="inline-flex justify-center bg-upp-primary-container hover:bg-upp-primary-dark text-white px-5 py-3 rounded-lg font-semibold transition">
                                 {{ $loggedIn ? 'Ir a mi panel' : 'Iniciar sesión' }}
                             </a>
                             @if (! $loggedIn && Route::has('register'))
@@ -250,7 +225,7 @@
                         </p>
                         <div class="mt-6">
                             <a href="{{ $loggedIn ? route('dashboard') : $docenteUrl }}"
-                               class="inline-flex justify-center w-full sm:w-auto bg-upp-primary-container hover:bg-upp-primary text-white px-5 py-3 rounded-lg font-semibold transition">
+                               class="inline-flex justify-center w-full sm:w-auto bg-upp-primary-container hover:bg-upp-primary-dark text-white px-5 py-3 rounded-lg font-semibold transition">
                                 {{ $loggedIn ? 'Ir a mi panel' : 'Iniciar sesión' }}
                             </a>
                             <p class="text-xs text-gray-500 mt-3">Las cuentas de tutores, docentes y responsables las crea la coordinación del evento.</p>
@@ -365,7 +340,7 @@
                                     <span class="mt-4 block text-center px-4 py-2.5 rounded-lg bg-gray-100 text-gray-500 font-semibold cursor-not-allowed">Sin lugares</span>
                                 @else
                                     <a href="{{ $enrollUrl }}"
-                                       class="mt-4 block text-center px-4 py-2.5 rounded-lg bg-upp-primary-container hover:bg-upp-primary text-white font-semibold transition">
+                                       class="mt-4 block text-center px-4 py-2.5 rounded-lg bg-upp-primary-container hover:bg-upp-primary-dark text-white font-semibold transition">
                                         Inscribirme
                                     </a>
                                 @endif

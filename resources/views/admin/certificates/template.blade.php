@@ -3,6 +3,8 @@
 @section('title', 'Plantilla del certificado')
 
 @section('content')
+    {{-- Color institucional: los mismos tonos que pdf/certificate.blade.php --}}
+    @php $m = config('aldea.marca'); @endphp
 
 @php
     $field = 'w-full rounded-lg border px-4 py-2.5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container';
@@ -183,7 +185,7 @@
                 </button>
 
                 <button type="submit"
-                        class="bg-upp-primary-container hover:bg-upp-primary text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition">
+                        class="bg-upp-primary-container hover:bg-upp-primary-dark text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition">
                     Guardar plantilla
                 </button>
             </div>
@@ -204,25 +206,25 @@
                     <div class="relative w-full" style="padding-bottom: 77.27%; container-type: inline-size;">
                         <div class="absolute inset-0 bg-white overflow-hidden" style="font-size: 1.6cqw;">
 
-                            <div class="absolute" style="inset: 3.2%; border: 1.1cqw solid #4a1f80;"></div>
-                            <div class="absolute" style="inset: 4.8%; border: 0.15cqw solid #b49bd6;"></div>
+                            <div class="absolute" style="inset: 3.2%; border: 1.1cqw solid {{ $m[800] }};"></div>
+                            <div class="absolute" style="inset: 4.8%; border: 0.15cqw solid {{ $m[300] }};"></div>
 
                             <div class="absolute text-center" style="top: 9%; left: 9%; right: 9%; bottom: 8%; color: #1b1530;">
 
                                 <div class="flex items-center justify-between">
-                                    <img src="{{ asset('img/escudo-upp.png') }}" alt="" class="rounded" style="height: 3.4em; background: #26093f; padding: 0.2em;"
+                                    <img src="{{ asset('img/escudo-upp.png') }}" alt="" class="rounded" style="height: 3.4em; background: {{ $m[900] }}; padding: 0.2em;"
                                          onerror="this.style.visibility='hidden'">
                                     <div class="flex-1 px-2">
-                                        <p data-preview="institution" class="font-bold" style="font-size: 0.85em; letter-spacing: 0.22em; color: #4a1f80;"></p>
-                                        <p data-preview="event_name" class="font-serif" style="font-size: 1.15em; color: #26093f;"></p>
+                                        <p data-preview="institution" class="font-bold" style="font-size: 0.85em; letter-spacing: 0.22em; color: {{ $m[800] }};"></p>
+                                        <p data-preview="event_name" class="font-serif" style="font-size: 1.15em; color: {{ $m[900] }};"></p>
                                     </div>
-                                    <div class="text-left" style="border: 0.08em solid #d7c8ea; padding: 0.25em 0.4em; font-size: 0.6em; color: #5a2d93;">
-                                        Folio<br><b style="color: #26093f;">AT26-P-00000-000-XXXXXX</b>
+                                    <div class="text-left" style="border: 0.08em solid {{ $m[200] }}; padding: 0.25em 0.4em; font-size: 0.6em; color: {{ $m[600] }};">
+                                        Folio<br><b style="color: {{ $m[900] }};">AT26-P-00000-000-XXXXXX</b>
                                     </div>
                                 </div>
 
                                 <p data-preview="heading" style="margin-top: 1.2em; font-size: 0.9em; letter-spacing: 0.1em; color: #475569;"></p>
-                                <p data-preview="title" class="font-serif" style="font-size: 3.4em; line-height: 1.1; letter-spacing: 0.22em; color: #4a1f80;"></p>
+                                <p data-preview="title" class="font-serif" style="font-size: 3.4em; line-height: 1.1; letter-spacing: 0.22em; color: {{ $m[800] }};"></p>
                                 <div style="width: 22%; height: 0.15em; background: #c9a227; margin: 0.3em auto 0;"></div>
 
                                 <p style="margin-top: 0.7em; font-size: 0.9em; color: #475569;">a:</p>
@@ -257,6 +259,7 @@
             const defaults = @json($defaults);
             const known = @json(array_keys($variables));
             const issued = @json(now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'));
+            const morado = @json(config('aldea.marca.900')); // tono oscuro del color institucional
 
             const field = (name) => form.elements[name].value.trim();
             const escape = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -268,7 +271,7 @@
                     return `<span style="background:#fee2e2;color:#b91c1c;">${match}</span>`;
                 }
                 const value = key === 'evento' ? field('event_name') : sample[key];
-                return `<strong style="color:#26093f;">${escape(String(value ?? ''))}</strong>`;
+                return `<strong style="color:${morado};">${escape(String(value ?? ''))}</strong>`;
             });
 
             const update = () => {
@@ -280,8 +283,8 @@
                 const signers = [[field('signer1_name'), field('signer1_title')], [field('signer2_name'), field('signer2_title')]]
                     .filter(([name]) => name !== '');
                 preview('signers').innerHTML = signers.map(([name, title]) => `
-                    <div style="width: 32%; border-top: 0.1em solid #26093f; padding-top: 0.3em;">
-                        <p style="font-size: 0.75em; font-weight: bold; color: #26093f;">${escape(name)}</p>
+                    <div style="width: 32%; border-top: 0.1em solid ${morado}; padding-top: 0.3em;">
+                        <p style="font-size: 0.75em; font-weight: bold; color: ${morado};">${escape(name)}</p>
                         <p style="font-size: 0.62em; color: #64748b;">${escape(title)}</p>
                     </div>`).join('');
 

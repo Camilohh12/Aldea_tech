@@ -11,6 +11,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Crea un administrador con contraseña conocida: nunca en el servidor
+        if (app()->isProduction()) {
+            throw new \RuntimeException('DatabaseSeeder crea cuentas de prueba y no se corre en producción. En el servidor usa: php artisan db:seed --class=ProduccionSeeder --force');
+        }
+
         // Crear Roles de Spatie
         $superAdmin = Role::create(['name' => 'super_admin']);
         $admin      = Role::create(['name' => 'admin']);

@@ -4,8 +4,8 @@
     @php
         // Textos del campo de usuario según el perfil elegido
         $perfiles = [
-            'alumno' => ['label' => 'Alumno', 'campo' => 'Correo o matrícula', 'placeholder' => 'Ej. 202308492 o usuario@upp.edu.mx',
-                'ayuda' => 'Ingresa tu matrícula de 9 dígitos o tu correo institucional.',
+            'alumno' => ['label' => 'Alumno', 'campo' => 'Correo o matrícula', 'placeholder' => 'Ej. 2023084921 o usuario@upp.edu.mx',
+                'ayuda' => 'Ingresa tu matrícula de '.config('aldea.matricula_digitos').' dígitos o tu correo institucional.',
                 'icon' => 'M12 4L2 9l10 5 10-5-10-5zM6 11v5c3 2 9 2 12 0v-5'],
             'docente' => ['label' => 'Docente', 'campo' => 'Correo institucional', 'placeholder' => 'usuario@upp.edu.mx',
                 'ayuda' => 'Tutores, docentes y ponentes entran con su correo.',

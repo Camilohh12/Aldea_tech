@@ -47,7 +47,7 @@
     </div>
 
     <!-- Filtros -->
-    <form action="{{ route('admin.tutors.students', $tutor) }}" method="GET"
+    <form action="{{ route('admin.tutors.students', $tutor) }}" method="GET" data-filtro-vivo
           class="bg-white rounded-xl shadow-sm p-4 lg:p-5 mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-[1.4fr_1.6fr_0.8fr_0.9fr_auto] xl:items-end">
 
         <div>
@@ -88,18 +88,20 @@
                     class="flex-1 xl:flex-none px-4 py-2 rounded-lg bg-upp-surface-high text-upp-primary-container text-sm font-medium hover:bg-upp-secondary-container transition">
                 Filtrar
             </button>
+            <span data-resultados="limpiar" class="contents">
             @if ($hasFilters)
                 <a href="{{ route('admin.tutors.students', $tutor) }}"
                    class="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-upp-surface-low transition">
                     Limpiar
                 </a>
             @endif
+            </span>
         </div>
 
     </form>
 
     <!-- Resultados -->
-    <form action="{{ route('admin.tutors.students.assign', $tutor) }}" method="POST" id="assign-form"
+    <form action="{{ route('admin.tutors.students.assign', $tutor) }}" method="POST" id="assign-form" data-resultados="alumnos"
           class="bg-white rounded-xl shadow-sm overflow-hidden">
 
         @csrf
@@ -120,7 +122,7 @@
             @if ($total > 0)
                 <div class="flex flex-col sm:flex-row gap-2">
                     <button type="submit" id="assign-selected" disabled
-                            class="px-4 py-2 rounded-lg bg-upp-primary-container text-white text-sm font-medium shadow-sm transition hover:bg-upp-primary disabled:opacity-40 disabled:cursor-not-allowed">
+                            class="px-4 py-2 rounded-lg bg-upp-primary-container text-white text-sm font-medium shadow-sm transition hover:bg-upp-primary-dark disabled:opacity-40 disabled:cursor-not-allowed">
                         Asignar seleccionados (<span id="selected-count">0</span>)
                     </button>
                     <button type="submit" name="todos" value="1"
@@ -195,22 +197,24 @@
     </form>
 
     <!-- Paginación -->
-    <div class="mt-6">
+    <div class="mt-6" data-resultados="paginacion">
         {{ $students->links() }}
     </div>
 
 @push('scripts')
     <script>
         (() => {
-            const checks = [...document.querySelectorAll('.student-check')];
-            const selectAll = document.getElementById('select-all');
-            const button = document.getElementById('assign-selected');
-            const counter = document.getElementById('selected-count');
-
-            if (!button) return;
-
-            // Habilita "Asignar seleccionados" solo cuando hay alumnos marcados
+            // Se escucha en el documento (no en cada casilla) porque la búsqueda
+            // mientras escribes reemplaza la tabla: así sigue funcionando.
+            // Habilita "Asignar seleccionados" solo cuando hay alumnos marcados.
             const refresh = () => {
+                const checks = [...document.querySelectorAll('.student-check')];
+                const selectAll = document.getElementById('select-all');
+                const button = document.getElementById('assign-selected');
+                const counter = document.getElementById('selected-count');
+
+                if (!button || !selectAll) return;
+
                 const selected = checks.filter((check) => check.checked).length;
                 counter.textContent = selected;
                 button.disabled = selected === 0;
@@ -218,10 +222,13 @@
                 selectAll.indeterminate = selected > 0 && selected < checks.length;
             };
 
-            checks.forEach((check) => check.addEventListener('change', refresh));
-            selectAll.addEventListener('change', () => {
-                checks.forEach((check) => { check.checked = selectAll.checked; });
-                refresh();
+            document.addEventListener('change', (event) => {
+                if (event.target.id === 'select-all') {
+                    document.querySelectorAll('.student-check').forEach((check) => { check.checked = event.target.checked; });
+                    refresh();
+                } else if (event.target.classList?.contains('student-check')) {
+                    refresh();
+                }
             });
 
             refresh();

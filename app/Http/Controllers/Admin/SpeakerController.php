@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Speaker;
@@ -10,10 +11,12 @@ use Illuminate\Validation\Rule;
 
 class SpeakerController extends Controller
 {
+    use LeeFiltros;
+
     // Mostrar todos los ponentes (con búsqueda por nombre o matrícula)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
+        $search = $this->filtroTexto($request, 'q');
 
         $speakers = Speaker::withCount('activities')
             ->when($search !== '', function ($query) use ($search) {

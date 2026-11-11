@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es-MX" translate="no">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#3c1860">
+    <title>Sin conexión · Aldea Tecnológica UPP</title>
+    <link rel="icon" type="image/png" href="/img/escudo-upp.png">
+    <!-- Página que muestra el service worker (sw.js) cuando no hay internet; no depende de Vite -->
+    <!-- Colores copiados de resources/css/marca.json (800 = #3c1860, 900 = #260f3d): esta página no pasa por Laravel ni Vite -->
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+            background: #fef7ff; color: #1c1b1f;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        main {
+            width: 100%; max-width: 420px; background: #fff; border-radius: 20px; padding: 32px 24px;
+            box-shadow: 0 10px 30px rgba(38, 15, 61, .08); border: 1px solid #ede5f5; text-align: center;
+        }
+        .escudo {
+            width: 64px; height: 64px; margin: 0 auto; display: grid; place-items: center;
+            background: #260f3d; border-radius: 16px; box-shadow: 0 0 0 4px #ede5f5;
+        }
+        .escudo img { height: 48px; }
+        .estado {
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; padding: 4px 12px;
+            border-radius: 999px; background: #fff7ed; color: #9a3412; font-size: 12px; font-weight: 600;
+        }
+        .estado::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+        h1 { margin: 12px 0 0; font-size: 22px; color: #3c1860; }
+        p { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: #64748b; }
+        .acciones { display: grid; gap: 10px; margin-top: 24px; }
+        a, button {
+            display: block; width: 100%; padding: 12px 16px; border-radius: 12px; font: inherit;
+            font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer;
+        }
+        .principal { background: #3c1860; color: #fff; border: 0; }
+        .secundario { background: #fff; color: #3c1860; border: 1px solid #d9c8ea; }
+        .nota { margin-top: 20px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="escudo"><img src="/img/escudo-upp.png" alt="Escudo UPP"></div>
+        <span class="estado">Sin conexión</span>
+        <h1>Esta página no está guardada</h1>
+        <p>Sin internet puedes abrir las páginas que ya visitaste en este celular:</p>
+
+        <div class="acciones">
+            <a class="principal" href="/alumno/pases">Mis pases (alumnos)</a>
+            <a class="secundario" href="/pase-lista">Pase de lista (responsables)</a>
+            <button class="secundario" type="button" onclick="location.reload()">Reintentar</button>
+        </div>
+
+        <p class="nota">Para que se guarden, entra una vez con internet después de inscribirte o de que te asignen tus actividades.</p>
+    </main>
+</body>
+</html>

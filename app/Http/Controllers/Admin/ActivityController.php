@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityType;
@@ -17,6 +18,8 @@ use Illuminate\Validation\Rule;
 
 class ActivityController extends Controller
 {
+    use LeeFiltros;
+
     // Roles que pueden quedar como responsables (pasar lista):
     // de preferencia un responsable; los docentes también pueden hacerlo.
     private const RESPONSIBLE_ROLES = ['responsable', 'docente'];
@@ -24,9 +27,9 @@ class ActivityController extends Controller
     // Mostrar la programación (con búsqueda y filtros)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
-        $typeId = $request->query('tipo');
-        $day = $request->query('dia');
+        $search = $this->filtroTexto($request, 'q');
+        $typeId = $this->filtroEntero($request, 'tipo');
+        $day = $this->filtroFecha($request, 'dia');
 
         $activities = Activity::with(['activityType', 'room', 'responsible', 'speakers'])
             ->select('activities.*')

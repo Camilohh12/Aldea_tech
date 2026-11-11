@@ -32,7 +32,7 @@
         </div>
 
         <a href="{{ route('admin.certificates.template') }}"
-           class="inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
+           class="inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary-dark text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
@@ -86,7 +86,7 @@
         <div class="px-4 lg:px-6 py-4 border-b border-upp-surface-high flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
 
             <!-- Pestañas -->
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2" data-resultados="pestanas">
                 @foreach ($tabs as $key => [$label, $total])
                     <a href="{{ route('admin.certificates.index', ['estado' => $key, 'q' => $search ?: null]) }}"
                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition
@@ -97,7 +97,7 @@
             </div>
 
             <!-- Búsqueda -->
-            <form action="{{ route('admin.certificates.index') }}" method="GET" class="flex gap-2 w-full xl:w-auto">
+            <form action="{{ route('admin.certificates.index') }}" method="GET" data-filtro-vivo class="flex gap-2 w-full xl:w-auto">
                 <input type="hidden" name="estado" value="{{ $estado }}">
                 <div class="relative flex-1 xl:w-80">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -114,7 +114,7 @@
             </form>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" data-resultados="tabla">
             <table class="w-full text-left text-sm">
 
                 <thead class="bg-upp-surface-low text-upp-secondary text-xs uppercase tracking-wider">
@@ -190,7 +190,7 @@
                             <td class="px-4 lg:px-6 py-4 text-right">
                                 @if ($row->estado === 'listo')
                                     <a href="{{ route('admin.certificates.download', [$row->activity, $row->speaker]) }}"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-upp-primary-container hover:bg-upp-primary text-white font-medium transition whitespace-nowrap">
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-upp-primary-container hover:bg-upp-primary-dark text-white font-medium transition whitespace-nowrap">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
@@ -233,7 +233,7 @@
     </div>
 
     <!-- Paginación -->
-    <div class="mt-6">
+    <div class="mt-6" data-resultados="paginacion">
         {{ $rows->links() }}
     </div>
 

@@ -29,6 +29,8 @@
         </p>
     </div>
 
+    @include('admin.attendances._vistas', ['activa' => 'talleres'])
+
     <!-- Tarjetas de resumen -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
 
@@ -101,7 +103,7 @@
             <h2 class="font-heading text-lg font-bold text-upp-primary mb-4">Asistencia por actividad</h2>
 
             <!-- Búsqueda y filtros -->
-            <form action="{{ route('admin.attendances.index') }}" method="GET" class="flex flex-col gap-2 lg:flex-row">
+            <form action="{{ route('admin.attendances.index') }}" method="GET" data-filtro-vivo class="flex flex-col gap-2 lg:flex-row">
                 <div class="relative flex-1">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
@@ -139,17 +141,19 @@
                         Filtrar
                     </button>
 
+                    <span data-resultados="limpiar" class="contents">
                     @if ($hasFilters)
                         <a href="{{ route('admin.attendances.index') }}"
                            class="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-upp-surface-low transition">
                             Limpiar
                         </a>
                     @endif
+                    </span>
                 </div>
             </form>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" data-resultados="tabla">
             <table class="w-full text-left text-sm">
 
                 <thead class="bg-upp-surface-low text-upp-secondary text-xs uppercase tracking-wider">
@@ -245,7 +249,7 @@
     </div>
 
     <!-- Paginación -->
-    <div class="mt-6">
+    <div class="mt-6" data-resultados="paginacion">
         {{ $activities->links() }}
     </div>
 

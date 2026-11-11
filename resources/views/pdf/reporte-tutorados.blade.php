@@ -5,6 +5,7 @@
     <title>Reporte de asistencia de tutorados</title>
     @php
         $fmt = fn ($n) => rtrim(rtrim(number_format((float) $n, 1), '0'), '.');
+        $m = config('aldea.marca'); // color institucional (resources/css/marca.json)
         $fecha = $generado->locale('es')->isoFormat('D [de] MMMM [de] YYYY, HH:mm');
     @endphp
     <style>
@@ -13,38 +14,38 @@
 
         .pie { position: fixed; bottom: -34px; left: 0; right: 0; font-size: 7px; color: #6b6b80; }
 
-        .encabezado { width: 100%; border-bottom: 3px solid #340158; padding-bottom: 8px; margin-bottom: 12px; }
+        .encabezado { width: 100%; border-bottom: 3px solid {{ $m[800] }}; padding-bottom: 8px; margin-bottom: 12px; }
         .encabezado td { vertical-align: middle; }
         .escudo { width: 50px; }
         /* El escudo es claro: va sobre fondo morado, igual que en los certificados */
-        .escudo img { width: 36px; background: #26093f; padding: 3px; border-radius: 4px; }
+        .escudo img { width: 36px; background: {{ $m[900] }}; padding: 3px; border-radius: 4px; }
         .institucion { font-size: 8px; color: #6f528a; text-transform: uppercase; letter-spacing: 1px; }
-        h1 { font-size: 15px; color: #340158; margin: 2px 0 0; }
+        h1 { font-size: 15px; color: {{ $m[800] }}; margin: 2px 0 0; }
 
         .datos { width: 100%; margin-bottom: 12px; }
         .datos td { padding: 1.5px 0; }
         .etiqueta { color: #6f528a; width: 92px; }
 
         .resumen { width: 100%; border-collapse: separate; border-spacing: 5px 0; margin: 0 -5px 14px; }
-        .resumen td { background: #f5eef8; border-left: 3px solid #4b1f6f; padding: 6px 8px; width: 16.6%; }
-        .resumen .numero { font-size: 15px; font-weight: bold; color: #340158; }
+        .resumen td { background: {{ $m[50] }}; border-left: 3px solid {{ $m[700] }}; padding: 6px 8px; width: 16.6%; }
+        .resumen .numero { font-size: 15px; font-weight: bold; color: {{ $m[800] }}; }
         .resumen .texto { font-size: 7px; color: #6f528a; text-transform: uppercase; }
 
-        h2 { font-size: 10.5px; color: #340158; margin: 14px 0 6px; }
+        h2 { font-size: 10.5px; color: {{ $m[800] }}; margin: 14px 0 6px; }
 
         table.lista { width: 100%; border-collapse: collapse; }
-        table.lista th { background: #340158; color: #fff; text-align: left; padding: 4px 5px; font-size: 7px; text-transform: uppercase; }
-        table.lista td { padding: 4px 5px; border-bottom: 1px solid #e8dff0; vertical-align: top; }
+        table.lista th { background: {{ $m[800] }}; color: #fff; text-align: left; padding: 4px 5px; font-size: 7px; text-transform: uppercase; }
+        table.lista td { padding: 4px 5px; border-bottom: 1px solid {{ $m[100] }}; vertical-align: top; }
         .centro { text-align: center; }
         .gris { color: #6b6b80; }
 
         .estado { padding: 1px 4px; font-size: 7px; font-weight: bold; }
         .acreditado { background: #d1fae5; color: #065f46; }
-        .en_progreso { background: #ede3f5; color: #4b1f6f; }
+        .en_progreso { background: {{ $m[100] }}; color: {{ $m[700] }}; }
         .pendiente { background: #fee2e2; color: #991b1b; }
 
         .alumno { page-break-inside: avoid; margin-bottom: 10px; }
-        .alumno-titulo { background: #f5eef8; padding: 4px 6px; color: #340158; font-weight: bold; }
+        .alumno-titulo { background: {{ $m[50] }}; padding: 4px 6px; color: {{ $m[800] }}; font-weight: bold; }
         .alumno-titulo span { font-weight: normal; color: #6f528a; }
         .vacio { color: #6b6b80; font-style: italic; padding: 4px 6px; }
         .asistio { color: #065f46; font-weight: bold; }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Models\Activity;
 use App\Models\ActivityType;
 use App\Models\Speaker;
@@ -13,10 +14,12 @@ use Illuminate\Support\Facades\DB;
 // Página principal pública: portada del evento y catálogo de actividades
 class HomeController extends Controller
 {
+    use LeeFiltros;
+
     public function index(Request $request)
     {
-        $typeId = $request->query('tipo');
-        $day = $request->query('dia');
+        $typeId = $this->filtroEntero($request, 'tipo');
+        $day = $this->filtroFecha($request, 'dia');
 
         // Actividades que todavía no terminan, con sus inscritos
         $upcoming = Activity::with(['activityType', 'room', 'speakers'])

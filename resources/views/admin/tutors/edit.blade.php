@@ -47,7 +47,7 @@
                 </a>
 
                 <button type="submit"
-                        class="bg-upp-primary-container hover:bg-upp-primary text-white px-6 py-3 rounded-lg font-medium shadow-sm transition">
+                        class="bg-upp-primary-container hover:bg-upp-primary-dark text-white px-6 py-3 rounded-lg font-medium shadow-sm transition">
                     Guardar Cambios
                 </button>
 
@@ -81,7 +81,7 @@
                         Matrícula {{ $student->matricula ?? '—' }}
                         · {{ $student->carrera ?? 'Sin carrera' }}
                         @if ($student->cuatrimestre)
-                            · {{ is_numeric($student->cuatrimestre) ? $student->cuatrimestre . '° cuatrimestre' : $student->cuatrimestre }}
+                            · {{ is_numeric($student->cuatrimestre) ? $student->cuatrimestre . '° cuatrimestre' : 'Cuatrimestre: ' . $student->cuatrimestre }}
                         @endif
                     </p>
                 </div>

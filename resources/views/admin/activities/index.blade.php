@@ -21,13 +21,44 @@
             </p>
         </div>
 
-        <a href="{{ route('admin.activities.create') }}"
-           class="inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            Nueva Actividad
-        </a>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center shrink-0">
+
+            <!-- Programa en PDF: completo o de un solo día -->
+            <details class="relative" data-dropdown>
+                <summary class="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap bg-white border border-upp-primary-container text-upp-primary-container hover:bg-upp-surface-low px-5 py-3 rounded-lg font-medium shadow-sm cursor-pointer transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M6 20h12a2 2 0 002-2V8l-6-6H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Descargar programa
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </summary>
+
+                <div class="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg ring-1 ring-upp-surface-high py-2 z-20">
+                    <p class="px-4 pt-1 pb-2 text-xs font-semibold tracking-wider uppercase text-upp-secondary">Programa en PDF</p>
+                    <a href="{{ route('admin.program.pdf') }}"
+                       class="block px-4 py-2 text-sm font-semibold text-upp-primary hover:bg-upp-surface-low">
+                        Completo · los {{ count($eventDays) }} días
+                    </a>
+                    @foreach ($eventDays as $fecha => $etiqueta)
+                        <a href="{{ route('admin.program.pdf', $fecha) }}"
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-upp-surface-low hover:text-upp-primary-dark">
+                            {{ $etiqueta }}
+                        </a>
+                    @endforeach
+                </div>
+            </details>
+
+            <a href="{{ route('admin.activities.create') }}"
+               class="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary-dark text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva Actividad
+            </a>
+
+        </div>
 
     </div>
 
@@ -82,7 +113,7 @@
             <h2 class="font-heading text-lg font-bold text-upp-primary mb-4">Cursos, talleres y conferencias</h2>
 
             <!-- Búsqueda y filtros -->
-            <form action="{{ route('admin.activities.index') }}" method="GET" class="flex flex-col gap-2 md:flex-row">
+            <form action="{{ route('admin.activities.index') }}" method="GET" data-filtro-vivo class="flex flex-col gap-2 md:flex-row">
                 <div class="relative flex-1">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
@@ -112,17 +143,19 @@
                         Filtrar
                     </button>
 
+                    <span data-resultados="limpiar" class="contents">
                     @if ($search !== '' || $typeId || $day)
                         <a href="{{ route('admin.activities.index') }}"
                             class="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-upp-surface-low transition">
                             Limpiar
                         </a>
                     @endif
+                    </span>
                 </div>
             </form>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" data-resultados="tabla">
             <table class="w-full text-left text-sm">
 
                 <thead class="bg-upp-surface-low text-upp-secondary text-xs uppercase tracking-wider">
@@ -239,7 +272,7 @@
     </div>
 
     <!-- Paginación -->
-    <div class="mt-6">
+    <div class="mt-6" data-resultados="paginacion">
         {{ $activities->links() }}
     </div>
 

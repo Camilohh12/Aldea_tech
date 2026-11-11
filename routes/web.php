@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\ActivityTypeController;
 use App\Http\Controllers\Admin\AdministratorController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\AttendanceGroupController;
 use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProgramaController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResponsibleController;
 use App\Http\Controllers\Admin\RoomController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaseLista\PaseListaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Tutor\TutoradosController;
+use App\Support\Grupo;
 use Illuminate\Support\Facades\Route;
 
 // Página principal: portada del evento y catálogo público
@@ -126,6 +130,15 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         Route::resource('activities', ActivityController::class)
             ->except(['show']);
 
+        // Programa del evento en PDF: completo o de un día (/admin/programa/pdf/2026-11-24)
+        Route::get('/programa/pdf/{dia?}', [ProgramaController::class, 'descargar'])
+            ->where('dia', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            ->name('program.pdf');
+
+        // CRUD de Tipos de actividad (Conferencia, Taller, Curso, Foro...)
+        Route::resource('activity-types', ActivityTypeController::class)
+            ->except(['show']);
+
         // CRUD de Responsables (usuarios con rol "responsable")
         Route::resource('responsibles', ResponsibleController::class)
             ->except(['show']);
@@ -147,6 +160,15 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         // Asistencias: el admin consulta (el responsable pasa lista)
         Route::get('/asistencias', [AttendanceController::class, 'index'])
             ->name('attendances.index');
+        // Por grupo (código sftw_01_09 o «sin-grupo»)
+        Route::get('/asistencias/grupos', [AttendanceGroupController::class, 'index'])
+            ->name('attendances.groups');
+        Route::get('/asistencias/grupos/csv', [AttendanceGroupController::class, 'exportSummary'])
+            ->name('attendances.groups.export');
+        Route::get('/asistencias/grupos/{grupo}', [AttendanceGroupController::class, 'show'])
+            ->where('grupo', Grupo::PATRON.'|'.Grupo::SIN_GRUPO)->name('attendances.group');
+        Route::get('/asistencias/grupos/{grupo}/csv', [AttendanceGroupController::class, 'export'])
+            ->where('grupo', Grupo::PATRON.'|'.Grupo::SIN_GRUPO)->name('attendances.group.export');
         Route::get('/asistencias/{activity}', [AttendanceController::class, 'show'])
             ->name('attendances.show');
         Route::get('/asistencias/{activity}/csv', [AttendanceController::class, 'export'])

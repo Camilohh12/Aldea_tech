@@ -65,7 +65,7 @@
             </div>
 
             <a href="{{ route('admin.attendances.export', $activity) }}"
-               class="inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
+               class="inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap bg-upp-primary-container hover:bg-upp-primary-dark text-white px-5 py-3 rounded-lg font-medium shadow-sm transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
@@ -118,7 +118,7 @@
         <div class="px-4 lg:px-6 py-4 border-b border-upp-surface-high flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 
             <!-- Pestañas -->
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2" data-resultados="pestanas">
                 @foreach ($tabs as $key => [$label, $total])
                     <a href="{{ route('admin.attendances.show', ['activity' => $activity, 'filtro' => $key, 'q' => $search ?: null]) }}"
                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition
@@ -129,7 +129,7 @@
             </div>
 
             <!-- Búsqueda -->
-            <form action="{{ route('admin.attendances.show', $activity) }}" method="GET" class="flex gap-2 w-full lg:w-auto">
+            <form action="{{ route('admin.attendances.show', $activity) }}" method="GET" data-filtro-vivo class="flex gap-2 w-full lg:w-auto">
                 <input type="hidden" name="filtro" value="{{ $filtro }}">
                 <div class="relative flex-1 lg:w-72">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@
             </form>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" data-resultados="tabla">
             <table class="w-full text-left text-sm">
 
                 <thead class="bg-upp-surface-low text-upp-secondary text-xs uppercase tracking-wider">
@@ -239,7 +239,7 @@
     </div>
 
     <!-- Paginación -->
-    <div class="mt-6">
+    <div class="mt-6" data-resultados="paginacion">
         {{ $participants->links() }}
     </div>
 

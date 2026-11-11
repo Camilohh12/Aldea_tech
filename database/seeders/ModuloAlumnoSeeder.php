@@ -20,6 +20,11 @@ class ModuloAlumnoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Crea cuentas con contraseña conocida: nunca en el servidor
+        if (app()->isProduction()) {
+            throw new \RuntimeException('ModuloAlumnoSeeder crea cuentas de prueba y no se corre en producción. En el servidor usa: php artisan db:seed --class=ProduccionSeeder --force');
+        }
+
         $rolAlumno = Role::firstOrCreate(['name' => 'alumno']);
 
         $alumno = User::firstOrCreate(

@@ -46,7 +46,7 @@
                 </a>
 
                 <button type="submit"
-                        class="bg-upp-primary-container hover:bg-upp-primary text-white px-6 py-3 rounded-lg font-medium shadow-sm transition">
+                        class="bg-upp-primary-container hover:bg-upp-primary-dark text-white px-6 py-3 rounded-lg font-medium shadow-sm transition">
                     Registrar Responsable
                 </button>
 
