@@ -193,9 +193,10 @@
                 <label class="flex items-start gap-2.5 text-sm text-slate-600">
                     <input type="checkbox" name="acepto" value="1" @checked(old('acepto')) required
                            class="mt-0.5 rounded border-slate-300 text-aldea-700 focus:ring-aldea-500">
+                    {{-- Las ligas se configuran en .env (ALDEA_URL_REGLAMENTO y ALDEA_URL_AVISO_PRIVACIDAD) --}}
                     <span>
-                        Acepto el <strong class="text-aldea-800">Reglamento de Participación</strong> y el
-                        <strong class="text-aldea-800">Aviso de Privacidad</strong> de la UPP para la acreditación curricular
+                        Acepto el @include('auth.partials.documento', ['nombre' => 'Reglamento de Participación', 'url' => config('aldea.enlaces.reglamento')]) y el
+                        @include('auth.partials.documento', ['nombre' => 'Aviso de Privacidad', 'url' => config('aldea.enlaces.aviso_privacidad')]) de la UPP para la acreditación curricular
                         y el control de asistencia en Aldea Tecnológica.
                     </span>
                 </label>

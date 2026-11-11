@@ -8,6 +8,7 @@ use App\Models\Activity;
 use App\Models\ActivityType;
 use App\Models\Certificate;
 use App\Models\User;
+use App\Support\Csv;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -77,7 +78,8 @@ class ReportController extends Controller
             fputcsv($out, array_column($report['columns'], 0));
 
             foreach ($report['rows'] as $row) {
-                fputcsv($out, $row);
+                // Csv::celda evita que Excel tome como fórmula un texto que empieza con =, +, - o @
+                fputcsv($out, array_map(Csv::celda(...), $row));
             }
 
             fclose($out);

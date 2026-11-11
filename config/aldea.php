@@ -17,6 +17,13 @@ return [
     // Solo se acepta exactamente este dominio: alumno@micorreo.upp.edu.mx.
     'dominio_correo' => env('ALDEA_DOMINIO_CORREO', 'micorreo.upp.edu.mx'),
 
+    // Ligas oficiales que el alumno acepta al registrarse. Mientras estén vacías,
+    // el registro muestra el nombre del documento sin enlace.
+    'enlaces' => [
+        'reglamento' => env('ALDEA_URL_REGLAMENTO'),
+        'aviso_privacidad' => env('ALDEA_URL_AVISO_PRIVACIDAD'),
+    ],
+
     // Programas que aparecen en el registro.
     'carreras' => [
         'Ingeniería en Tecnologías de la Información e Innovación Digital',

@@ -98,6 +98,8 @@ SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
 QUEUE_CONNECTION=sync
 RAILPACK_PHP_EXTENSIONS=gd
+ALDEA_URL_REGLAMENTO=
+ALDEA_URL_AVISO_PRIVACIDAD=
 ```
 
 - `TRUSTED_PROXIES=*` es necesario: Railway atiende el HTTPS y le pasa la visita a la app.
@@ -122,7 +124,7 @@ RAILPACK_PHP_EXTENSIONS=gd
    php artisan db:seed --class=ProduccionSeeder --force
    ```
 
-   No corras `ModuloAlumnoSeeder` en producción: crea datos de prueba con contraseñas conocidas.
+   No corras `DatabaseSeeder` ni `ModuloAlumnoSeeder` en producción: crean datos de prueba con contraseñas conocidas. Si alguien lo intenta con `APP_ENV=production`, se detienen con un error y no crean nada.
 
 ### 3.5 Dominio propio
 
@@ -130,7 +132,7 @@ Cuando TI pueda configurarlo:
 
 1. **Settings › Networking › Custom Domain ›** `aldea.upp.edu.mx`.
 2. Pásale a TI los registros `CNAME` y `TXT` que muestra Railway.
-3. Cambia la variable `APP_URL` a `https://aldea.upp.edu.mx`.
+3. Cambia la variable `APP_URL` a `https://aldea.upp.edu.mx`. Hazlo en cuanto el dominio funcione: la app solo atiende el dominio de `APP_URL`, y con cualquier otro responde con un error 400.
 
 ### 3.6 Actualizaciones
 
@@ -231,7 +233,7 @@ cd /var/www/aldea
 
 composer install --no-dev --optimize-autoloader
 cp .env.production.example .env
-nano .env                      # completa APP_URL, DB_PASSWORD y los datos de correo
+nano .env                      # completa APP_URL, DB_PASSWORD, los datos de correo y las ligas ALDEA_URL_*
 php artisan key:generate
 
 php artisan migrate --force

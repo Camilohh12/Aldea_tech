@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
+        // Solo se atiende el dominio de APP_URL (y sus subdominios): una visita que
+        // diga venir de otro dominio recibe un error 400 en lugar de generar enlaces
+        // hacia ese dominio. No aplica en local ni en las pruebas. El de Railway es el
+        // dominio con el que revisa /up antes de publicar.
+        $middleware->trustHosts(at: ['^healthcheck\.railway\.app$']);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
