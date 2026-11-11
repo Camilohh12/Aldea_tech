@@ -38,6 +38,7 @@
     // Submenú "Gestión": infraestructura del evento
     $gestion = [
         ['label' => 'Aulas',        'route' => 'admin.rooms.index',        'active' => 'admin.rooms.*'],
+        ['label' => 'Tipos de actividad', 'route' => 'admin.activity-types.index', 'active' => 'admin.activity-types.*'],
         ['label' => 'Ponentes',     'route' => 'admin.speakers.index',     'active' => 'admin.speakers.*'],
         ['label' => 'Responsables', 'route' => 'admin.responsibles.index', 'active' => 'admin.responsibles.*'],
         ['label' => 'Tutores',      'route' => 'admin.tutors.index',       'active' => 'admin.tutors.*'],

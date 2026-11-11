@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\ActivityTypeController;
 use App\Http\Controllers\Admin\AdministratorController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceGroupController;
@@ -133,6 +134,10 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         Route::get('/programa/pdf/{dia?}', [ProgramaController::class, 'descargar'])
             ->where('dia', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
             ->name('program.pdf');
+
+        // CRUD de Tipos de actividad (Conferencia, Taller, Curso, Foro...)
+        Route::resource('activity-types', ActivityTypeController::class)
+            ->except(['show']);
 
         // CRUD de Responsables (usuarios con rol "responsable")
         Route::resource('responsibles', ResponsibleController::class)
