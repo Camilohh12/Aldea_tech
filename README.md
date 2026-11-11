@@ -37,3 +37,10 @@ cd aldea-tecnologica
 # Instalar dependencias de PHP y JavaScript
 composer install
 npm install
+```
+
+---
+
+## 🌐 Publicación en producción
+
+La guía para publicar el sistema con HTTPS (servidor, base de datos, correo, respaldos y actualizaciones) está en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
