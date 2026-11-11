@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityType;
@@ -17,11 +18,13 @@ use Illuminate\Support\Str;
 // Certificados de ponentes: lista, plantilla editable y PDF
 class CertificateController extends Controller
 {
+    use LeeFiltros;
+
     // Lista de certificados: una fila por cada ponente de cada actividad
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
-        $estado = $request->query('estado', 'todos');
+        $search = $this->filtroTexto($request, 'q');
+        $estado = $this->filtroOpcion($request, 'estado', ['todos', 'listo', 'emitido', 'pendiente'], 'todos');
 
         $activities = Activity::with(['activityType', 'room', 'speakers'])
             ->orderBy('date')

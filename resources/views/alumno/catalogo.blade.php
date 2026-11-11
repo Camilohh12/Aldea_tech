@@ -22,7 +22,7 @@
     </section>
 
     {{-- Buscador y filtros --}}
-    <form method="GET" action="{{ route('alumno.catalogo') }}" class="mb-4 space-y-3">
+    <form method="GET" action="{{ route('alumno.catalogo') }}" data-filtro-vivo class="mb-4 space-y-3">
         @if (! empty($filters['tipo']))<input type="hidden" name="tipo" value="{{ $filters['tipo'] }}">@endif
         @if (! empty($filters['fecha']))<input type="hidden" name="fecha" value="{{ $filters['fecha'] }}">@endif
 
@@ -33,7 +33,7 @@
                    class="w-full rounded-2xl border-aldea-100 bg-white py-3 pl-11 text-[15px] shadow-sm placeholder:text-slate-500 focus:border-aldea-500 focus:ring-aldea-500">
         </label>
 
-        <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" data-resultados="dias">
             <a href="{{ $url(['fecha' => null]) }}" class="{{ $chip(empty($filters['fecha'])) }}">Todos los días</a>
             @foreach ($dates as $i => $date)
                 <a href="{{ $url(['fecha' => $date]) }}" class="{{ $chip(($filters['fecha'] ?? null) === $date) }}">
@@ -42,7 +42,7 @@
             @endforeach
         </div>
 
-        <div class="-mx-4 flex gap-1.5 overflow-x-auto px-4">
+        <div class="-mx-4 flex gap-1.5 overflow-x-auto px-4" data-resultados="tipos">
             <a href="{{ $url(['tipo' => null]) }}" class="{{ $chipTipo(empty($filters['tipo'])) }}">Todos</a>
             @foreach ($types as $type)
                 <a href="{{ $url(['tipo' => $type->id]) }}" class="{{ $chipTipo(($filters['tipo'] ?? null) == $type->id) }}">{{ $type->name }}</a>
@@ -51,7 +51,7 @@
     </form>
 
     {{-- Tarjetas --}}
-    <div class="grid gap-4 md:grid-cols-2">
+    <div class="grid gap-4 md:grid-cols-2" data-resultados="actividades">
         @forelse ($activities as $activity)
             @php
                 $enrolled = $misInscripciones->has($activity->id);

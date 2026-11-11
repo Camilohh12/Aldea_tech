@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityType;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 // Reportes del evento: se ven en pantalla y se descargan en CSV
 class ReportController extends Controller
 {
+    use LeeFiltros;
+
     // Reportes disponibles: clave => [título, descripción]
     private const REPORTS = [
         'inscripciones' => ['Inscripciones', 'Cupo, inscritos y cancelaciones por actividad.'],
@@ -28,8 +31,10 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-        $type = $request->query('reporte', 'inscripciones');
-        abort_unless(isset(self::REPORTS[$type]), 404);
+        $type = $request->has('reporte')
+            ? $this->filtroOpcion($request, 'reporte', array_keys(self::REPORTS))
+            : 'inscripciones';
+        abort_unless($type !== null, 404);
 
         $filters = $this->filters($request);
         $report = $this->build($type, $filters);
@@ -83,9 +88,9 @@ class ReportController extends Controller
     private function filters(Request $request): array
     {
         return [
-            'dia' => $request->query('dia') ?: null,
-            'tipo' => $request->query('tipo') ?: null,
-            'carrera' => $request->query('carrera') ?: null,
+            'dia' => $this->filtroFecha($request, 'dia'),
+            'tipo' => $this->filtroEntero($request, 'tipo'),
+            'carrera' => $this->filtroTexto($request, 'carrera', 255) ?: null,
         ];
     }
 

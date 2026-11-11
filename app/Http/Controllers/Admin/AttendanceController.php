@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityType;
@@ -16,13 +17,15 @@ use Illuminate\Support\Str;
 // el pase de lista lo hace el responsable de cada actividad.
 class AttendanceController extends Controller
 {
+    use LeeFiltros;
+
     // Resumen de asistencia por actividad (con búsqueda y filtros)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
-        $day = $request->query('dia');
-        $typeId = $request->query('tipo');
-        $estado = $request->query('estado');
+        $search = $this->filtroTexto($request, 'q');
+        $day = $this->filtroFecha($request, 'dia');
+        $typeId = $this->filtroEntero($request, 'tipo');
+        $estado = $this->filtroOpcion($request, 'estado', ['programada', 'en_curso', 'finalizada', 'abierta']);
 
         $activities = Activity::with(['activityType', 'room', 'responsible'])
             ->select('activities.*')
@@ -73,8 +76,8 @@ class AttendanceController extends Controller
         $activity->load(['activityType', 'room', 'responsible', 'speakers']);
         $activity->estado = $this->status($activity);
 
-        $search = trim((string) $request->query('q', ''));
-        $filtro = $request->query('filtro', 'todos');
+        $search = $this->filtroTexto($request, 'q');
+        $filtro = $this->filtroOpcion($request, 'filtro', ['todos', 'asistieron', 'sin_registro'], 'todos');
 
         $counts = [
             'inscritos' => $this->participants($activity)->count(),

@@ -24,7 +24,7 @@ class RegistrationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
         $response->assertSessionHas('success');
 
-        $user = \App\Models\User::where('matricula', '202308492')->first();
+        $user = \App\Models\User::where('matricula', '2023084921')->first();
         $this->assertTrue($user->hasRole('alumno'));
         $this->assertSame('Ingeniería en Software', $user->carrera);
     }
@@ -33,20 +33,24 @@ class RegistrationTest extends TestCase
     {
         $this->post('/register', $this->datos(['cuatrimestre' => 'Irregular']))->assertSessionHasNoErrors();
 
-        $user = \App\Models\User::where('matricula', '202308492')->first();
+        $user = \App\Models\User::where('matricula', '2023084921')->first();
         $this->assertSame('Irregular', $user->cuatrimestre);
         $this->assertSame('irregular', $user->estatus);
     }
 
     public function test_solo_acepta_correo_institucional(): void
     {
-        $this->post('/register', $this->datos(['email' => 'valeria@gmail.com']))
-            ->assertSessionHasErrors('email');
+        // Solo @micorreo.upp.edu.mx: ni otros dominios ni otros subdominios de la UPP
+        foreach (['valeria@gmail.com', 'valeria@upp.edu.mx', 'valeria@otro.upp.edu.mx',
+            'valeria@micorreo.upp.edu.mx.com', 'valeria@x.micorreo.upp.edu.mx'] as $correo) {
+            $this->post('/register', $this->datos(['email' => $correo]))
+                ->assertSessionHasErrors(['email' => 'Usa tu correo institucional (@micorreo.upp.edu.mx).']);
+        }
         $this->assertGuest();
 
-        // Subdominios del dominio institucional sí se aceptan
-        $this->post('/register', $this->datos(['email' => 'valeria@micorreo.upp.edu.mx']))
+        $this->post('/register', $this->datos(['email' => 'Valeria@MiCorreo.UPP.edu.mx']))
             ->assertSessionHasNoErrors();
+        $this->assertSame('valeria@micorreo.upp.edu.mx', \App\Models\User::first()->email);
     }
 
     public function test_valida_matricula_y_aceptacion(): void
@@ -61,7 +65,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', $this->datos());
         auth()->logout();
 
-        $this->post('/login', ['email' => '202308492', 'password' => 'password123'])
+        $this->post('/login', ['email' => '2023084921', 'password' => 'Password123'])
             ->assertRedirect(route('dashboard', absolute: false));
         $this->assertAuthenticated();
     }
@@ -69,13 +73,14 @@ class RegistrationTest extends TestCase
     private function datos(array $cambios = []): array
     {
         return array_merge([
-            'matricula' => '202308492',
+            'matricula' => '2023084921',
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => 7,
-            'email' => 'valeria.martinez@upp.edu.mx',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'grupo' => '1',
+            'email' => 'valeria.martinez@micorreo.upp.edu.mx',
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123',
             'acepto' => '1',
         ], $cambios);
     }

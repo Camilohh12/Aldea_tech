@@ -4,7 +4,7 @@
     $ojo = 'absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-500 hover:bg-aldea-50';
     $campos = [
         ['update_password_current_password', 'current_password', 'Contraseña actual', 'current-password', 'candado', ''],
-        ['update_password_password', 'password', 'Contraseña nueva', 'new-password', 'candado', 'Mínimo 8 caracteres'],
+        ['update_password_password', 'password', 'Contraseña nueva', 'new-password', 'candado', 'Mínimo 6, con una mayúscula'],
         ['update_password_password_confirmation', 'password_confirmation', 'Confirmar contraseña nueva', 'new-password', 'sincronizar', 'Repite la contraseña nueva'],
     ];
 @endphp
@@ -25,6 +25,7 @@
                 <div class="relative mt-1.5">
                     <x-icono :name="$icon" :class="$icono" />
                     <input id="{{ $id }}" name="{{ $nombre }}" :type="ver ? 'text' : 'password'" type="password" autocomplete="{{ $autocompletar }}"
+                           @if ($nombre === 'password') minlength="{{ \App\Support\ReglasAlumno::CONTRASENA_MIN }}" pattern="{{ \App\Support\ReglasAlumno::patronContrasenaHtml() }}" title="Mínimo {{ \App\Support\ReglasAlumno::CONTRASENA_MIN }} caracteres con al menos una mayúscula." @endif
                            placeholder="{{ $ayuda }}" class="{{ $input }}">
                     <button type="button" @click="ver = !ver" :aria-label="ver ? 'Ocultar contraseña' : 'Mostrar contraseña'" class="{{ $ojo }}">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z" /></svg>

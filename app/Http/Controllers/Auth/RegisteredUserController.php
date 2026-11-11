@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Grupo;
+use App\Support\ReglasAlumno;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -41,29 +42,32 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $dominio = preg_quote(config('aldea.dominio_correo'), '/');
+        // El correo se guarda en minúsculas: «Ana@UPP.edu.mx» es el mismo que «ana@upp.edu.mx»
+        if (is_string($request->input('email'))) {
+            $request->merge(['email' => Str::lower($request->input('email'))]);
+        }
 
         // El tutor es obligatorio en cuanto la coordinación haya registrado tutores
         $hayTutores = $this->tutores()->exists();
 
         $request->validate([
-            'matricula' => ['required', 'digits:9', 'unique:'.User::class],
-            'name' => ['required', 'string', 'max:255'],
-            'carrera' => ['required', 'string', Rule::in(config('aldea.carreras'))],
-            'cuatrimestre' => ['required', Rule::in(config('aldea.cuatrimestres'))],
+            'matricula' => [...ReglasAlumno::matricula(), 'unique:'.User::class],
+            'name' => ReglasAlumno::nombre(),
+            'carrera' => ReglasAlumno::carrera(),
+            'cuatrimestre' => ReglasAlumno::cuatrimestre(),
+            'grupo' => ReglasAlumno::grupo($request->input('cuatrimestre')),
             'tutor_id' => ['bail', $hayTutores ? 'required' : 'nullable', 'integer', function ($attribute, $value, $fail) {
                 if (! $this->tutores()->whereKey($value)->exists()) {
                     $fail('Selecciona a tu tutor de la lista.');
                 }
             }],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class,
-                "regex:/@([a-z0-9-]+\\.)*{$dominio}$/"],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                ReglasAlumno::correoInstitucional()],
+            'password' => ReglasAlumno::contrasena(),
             'acepto' => ['accepted'],
         ], [
-            'matricula.digits' => 'La matrícula debe tener 9 dígitos.',
+            ...ReglasAlumno::mensajes(),
             'matricula.unique' => 'Esa matrícula ya tiene una cuenta. Inicia sesión.',
-            'email.regex' => 'Usa tu correo institucional (@'.config('aldea.dominio_correo').').',
             'email.unique' => 'Ese correo ya tiene una cuenta. Inicia sesión.',
             'tutor_id.required' => 'Selecciona a tu tutor académico.',
             'tutor_id.integer' => 'Selecciona a tu tutor de la lista.',
@@ -75,7 +79,9 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'carrera' => $request->carrera,
             'cuatrimestre' => (string) $request->cuatrimestre,
-            'estatus' => $request->cuatrimestre === 'Irregular' ? 'irregular' : 'regular',
+            // El alumno escribe solo el número; se guarda el código completo (sftw_01_09)
+            'grupo' => Grupo::codigo($request->carrera, (string) $request->cuatrimestre, $request->grupo),
+            'estatus' => ReglasAlumno::estatus((string) $request->cuatrimestre),
             'tutor_id' => $request->tutor_id ?: null,
             'email' => $request->email,
             'password' => Hash::make($request->password),

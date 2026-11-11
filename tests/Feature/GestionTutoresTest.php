@@ -208,7 +208,7 @@ class GestionTutoresTest extends TestCase
         $this->assertGuest();
 
         $this->post('/register', $this->datosRegistro(['tutor_id' => $tutor->id]))->assertSessionHasNoErrors();
-        $alumno = User::where('matricula', '202308492')->first();
+        $alumno = User::where('matricula', '2023084921')->first();
         $this->assertSame($tutor->id, $alumno->tutor_id);
 
         // Y el tutor ya lo ve en su panel
@@ -220,19 +220,20 @@ class GestionTutoresTest extends TestCase
         $this->get('/register')->assertOk()->assertDontSee('Tutor académico');
 
         $this->post('/register', $this->datosRegistro())->assertSessionHasNoErrors();
-        $this->assertNull(User::where('matricula', '202308492')->value('tutor_id'));
+        $this->assertNull(User::where('matricula', '2023084921')->value('tutor_id'));
     }
 
     private function datosRegistro(array $cambios = []): array
     {
         return array_merge([
-            'matricula' => '202308492',
+            'matricula' => '2023084921',
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => 7,
-            'email' => 'valeria.martinez@upp.edu.mx',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'grupo' => '1',
+            'email' => 'valeria.martinez@micorreo.upp.edu.mx',
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123',
             'acepto' => '1',
         ], $cambios);
     }

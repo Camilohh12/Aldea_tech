@@ -10,6 +10,8 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/pases.js',
                 'resources/js/pase-lista.js',
+                // Panel admin y portada: no cargan app.js, solo este script
+                'resources/js/filtros-limpios.js',
             ],
             refresh: true,
         }),

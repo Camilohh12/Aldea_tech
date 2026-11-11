@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\User;
@@ -13,13 +14,15 @@ use Illuminate\Validation\Rule;
 // administradores con el mismo acceso y su propio usuario
 class AdministratorController extends Controller
 {
+    use LeeFiltros;
+
     // Roles con acceso al panel de administración
     private const PANEL_ROLES = ['admin', 'super_admin'];
 
     // Mostrar todos los administradores (con búsqueda por nombre o correo)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
+        $search = $this->filtroTexto($request, 'q');
 
         $administrators = User::role(self::PANEL_ROLES)
             ->with('roles')

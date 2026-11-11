@@ -20,8 +20,8 @@
         </div>
 
         <!-- Reporte en PDF con la búsqueda y el estado elegidos -->
-        <a href="{{ route('tutor.tutorados.reporte', array_filter(['q' => $q, 'estado' => $estado])) }}"
-           class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-upp-primary-container px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-upp-primary">
+        <a href="{{ route('tutor.tutorados.reporte', array_filter(['q' => $q, 'estado' => $estado])) }}" data-resultados="reporte"
+           class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-upp-primary-container px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-upp-primary-dark">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14" /></svg>
             Descargar reporte (PDF)
         </a>
@@ -58,14 +58,14 @@
                 <h2 class="font-heading text-lg font-bold text-upp-primary">Padrón de estudiantes bajo tutoría</h2>
                 <p class="text-sm text-gray-500">Avance en actividades extracurriculares y horas acreditadas.</p>
 
-                <form method="GET" action="{{ route('tutor.tutorados') }}" class="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+                <form method="GET" action="{{ route('tutor.tutorados') }}" data-filtro-vivo class="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                     @if ($estado)<input type="hidden" name="estado" value="{{ $estado }}">@endif
                     <div class="relative md:w-72">
                         <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" /></svg>
                         <input type="search" name="q" value="{{ $q }}" placeholder="Buscar por nombre o matrícula..."
                                class="w-full rounded-lg border-gray-300 py-2 pl-9 text-sm focus:border-upp-primary-container focus:ring-upp-primary-container">
                     </div>
-                    <div class="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:pb-0">
+                    <div class="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:pb-0" data-resultados="estados">
                         @foreach ($chips as $clave => $etiqueta)
                             @php $activo = ($estado ?? 'todos') === $clave; @endphp
                             <a href="{{ $filtro($clave === 'todos' ? null : $clave) }}"
@@ -77,6 +77,7 @@
                 </form>
             </div>
 
+            <div data-resultados="tutorados">
             @if ($tutorados->isEmpty())
                 <div class="px-6 py-14 text-center">
                     <p class="font-heading font-bold text-upp-primary">
@@ -172,6 +173,7 @@
             <p class="border-t border-upp-surface-high px-4 py-3 text-xs text-gray-500 lg:px-6">
                 Mostrando {{ $tutorados->count() }} de {{ $conteos['todos'] }} tutorados
             </p>
+            </div>
         </section>
 
         <!-- Columna lateral -->

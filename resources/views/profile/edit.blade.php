@@ -40,7 +40,7 @@
                     <span class="rounded-full bg-aldea-50 px-3 py-1 text-aldea-800">{{ $user->carrera }}</span>
                 @endif
                 @if ($user->cuatrimestre)
-                    <span class="rounded-full bg-aldea-50 px-3 py-1 text-aldea-800">{{ is_numeric($user->cuatrimestre) ? $user->cuatrimestre.'° cuatrimestre' : $user->cuatrimestre }}</span>
+                    <span class="rounded-full bg-aldea-50 px-3 py-1 text-aldea-800">{{ is_numeric($user->cuatrimestre) ? $user->cuatrimestre.'° cuatrimestre' : 'Cuatrimestre: '.$user->cuatrimestre }}</span>
                 @endif
             </div>
         </section>

@@ -67,11 +67,22 @@ class EstilosYPerfilTest extends TestCase
 
     public function test_al_guardar_el_perfil_se_confirma_en_espanol(): void
     {
-        $alumno = User::factory()->create(['name' => 'Valeria'])->assignRole('alumno');
+        $alumno = User::factory()->create([
+            'name' => 'Valeria',
+            'email' => 'valeria@upp.edu.mx',
+            'carrera' => 'Ingeniería en Software',
+            'cuatrimestre' => '7',
+        ])->assignRole('alumno');
 
         $this->actingAs($alumno)
             ->followingRedirects()
-            ->patch(route('profile.update'), ['name' => 'Valeria Martínez Solís', 'email' => $alumno->email])
+            ->patch(route('profile.update'), [
+                'name' => 'Valeria Martínez Solís',
+                'email' => $alumno->email,
+                'carrera' => $alumno->carrera,
+                'cuatrimestre' => $alumno->cuatrimestre,
+                'grupo' => '1',
+            ])
             ->assertOk()
             ->assertSee('Datos guardados.');
 

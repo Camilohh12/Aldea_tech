@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
     <!-- Estilos compilados con Vite (colores institucionales en tailwind.config.js), sin depender de un CDN -->
-    @vite('resources/css/admin.css')
+    @vite(['resources/css/admin.css', 'resources/js/filtros-limpios.js'])
 
     <style>
         /* Oculta el triángulo por defecto de <summary> en los menús desplegables */
@@ -102,7 +102,7 @@
                                 @if (Route::has($item['route']))
                                     <a href="{{ route($item['route']) }}"
                                        class="block px-4 py-2 text-sm
-                                              {{ request()->routeIs($item['active']) ? 'bg-upp-surface-low text-upp-primary font-semibold' : 'text-gray-700 hover:bg-upp-surface-low hover:text-upp-primary' }}">
+                                              {{ request()->routeIs($item['active']) ? 'bg-upp-surface-low text-upp-primary font-semibold' : 'text-gray-700 hover:bg-upp-surface-low hover:text-upp-primary-dark' }}">
                                         {{ $item['label'] }}
                                     </a>
                                 @else
@@ -130,7 +130,7 @@
 
                     <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg ring-1 ring-upp-surface-high py-2 z-20">
                         <a href="{{ route('profile.edit') }}"
-                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-upp-surface-low hover:text-upp-primary">
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-upp-surface-low hover:text-upp-primary-dark">
                             Mi perfil
                         </a>
                         <form method="POST" action="{{ route('logout') }}">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\User;
@@ -11,13 +12,15 @@ use Illuminate\Validation\Rule;
 
 class ResponsibleController extends Controller
 {
+    use LeeFiltros;
+
     // Rol que identifica a los responsables (migración create_responsable_role)
     private const ROLE = 'responsable';
 
     // Mostrar todos los responsables (con búsqueda por nombre o correo)
     public function index(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
+        $search = $this->filtroTexto($request, 'q');
 
         $responsibles = User::role(self::ROLE)
             ->with('roles')

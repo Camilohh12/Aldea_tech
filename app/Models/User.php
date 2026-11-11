@@ -26,6 +26,7 @@ class User extends Authenticatable
         'matricula',
         'carrera',
         'cuatrimestre',
+        'grupo',
         'estatus',
         'tutor_id',
     ];

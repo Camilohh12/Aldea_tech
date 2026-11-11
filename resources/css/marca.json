@@ -1,0 +1,18 @@
+{
+    "_nota": "Color institucional de la UPP, tomado del escudo oficial (public/img/escudo-upp-color.png). Es la unica fuente del color: lo leen tailwind.config.js (pantallas) y app/Support/Marca.php (PDF). Si lo cambias, ejecuta npm run build.",
+    "institucional": "#3C1860",
+
+    "_escala": "Tonos aldea-50 a aldea-900 con el mismo matiz del color institucional: [luminosidad, factor de saturacion]. El 800 es el color institucional exacto.",
+    "escala": {
+        "50":  [0.96, 0.75],
+        "100": [0.93, 0.75],
+        "200": [0.85, 0.75],
+        "300": [0.72, 0.75],
+        "400": [0.57, 0.70],
+        "500": [0.44, 0.75],
+        "600": [0.37, 0.88],
+        "700": [0.30, 0.97],
+        "800": null,
+        "900": [0.15, 1.00]
+    }
+}

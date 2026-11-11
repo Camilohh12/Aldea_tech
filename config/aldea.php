@@ -13,9 +13,9 @@ return [
     // curricular (créditos extracurriculares).
     'horas_liberacion' => (int) env('ALDEA_HORAS_LIBERACION', 20),
 
-    // Dominio del correo institucional para el registro de alumnos
-    // (se aceptan también subdominios, p. ej. alumno@micorreo.upp.edu.mx).
-    'dominio_correo' => env('ALDEA_DOMINIO_CORREO', 'upp.edu.mx'),
+    // Dominio del correo institucional de los alumnos (registro y «Mi perfil»).
+    // Solo se acepta exactamente este dominio: alumno@micorreo.upp.edu.mx.
+    'dominio_correo' => env('ALDEA_DOMINIO_CORREO', 'micorreo.upp.edu.mx'),
 
     // Programas que aparecen en el registro.
     'carreras' => [
@@ -24,7 +24,24 @@ return [
         'Ingeniería en Software',
     ],
 
-    // Opciones de cuatrimestre en el registro; "Irregular" marca al alumno como irregular.
-    'cuatrimestres' => [...array_map('strval', range(1, 10)), 'Irregular'],
+    // Dígitos que debe tener la matrícula de los alumnos.
+    'matricula_digitos' => 10,
+
+    // Opciones de cuatrimestre en el registro, el perfil y los filtros.
+    // "Irregular" marca al alumno como irregular; "Otro" es para cuando ninguna opción aplica.
+    'cuatrimestres' => [...array_map('strval', range(1, 10)), 'Irregular', 'Otro'],
+
+    // Grupos: el alumno escribe solo el número de su grupo y el sistema arma el
+    // código prefijo_grupo_cuatrimestre, p. ej. sftw_01_09 = Software, grupo 1, 9°.
+    // Los alumnos «Irregular» u «Otro» no capturan grupo: quedan en el de su tutor.
+    'prefijos_grupo' => [
+        'Ingeniería en Tecnologías de la Información e Innovación Digital' => 'tiid',
+        'Ingeniería en Redes y Telecomunicaciones' => 'redte', // provisional, falta confirmar
+        'Ingeniería en Software' => 'sftw',
+    ],
+
+    // Color institucional para los PDF: la misma escala "aldea" (50 a 900) de las
+    // pantallas, calculada desde resources/css/marca.json. 800 = color del escudo.
+    'marca' => \App\Support\Marca::escala(),
 
 ];
