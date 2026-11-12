@@ -17,6 +17,7 @@ use App\Http\Controllers\Alumno\AgendaController;
 use App\Http\Controllers\Alumno\CatalogoController;
 use App\Http\Controllers\Alumno\InscripcionController;
 use App\Http\Controllers\Alumno\PasesController;
+use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaseLista\PaseListaController;
 use App\Http\Controllers\ProfileController;
@@ -26,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 
 // Página principal: portada del evento y catálogo público
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Cronograma público de actividades por día
+Route::get('/cronograma', [CronogramaController::class, 'index'])->name('cronograma');
 
 // Dashboard: cada rol entra a su sección
 Route::get('/dashboard', function () {

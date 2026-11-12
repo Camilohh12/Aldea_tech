@@ -21,6 +21,12 @@
         <span class="shrink-0 rounded-full border border-aldea-100 bg-aldea-50 px-3 py-1 text-xs font-semibold text-aldea-800">● Alumno activo</span>
     </section>
 
+    {{-- Acceso al cronograma por día --}}
+    <a href="{{ route('cronograma') }}" class="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-aldea-100 bg-white px-4 py-3 text-sm font-semibold text-aldea-800 shadow-sm hover:border-aldea-300">
+        <span>Ver el cronograma por día</span>
+        <span aria-hidden="true">→</span>
+    </a>
+
     {{-- Buscador y filtros --}}
     <form method="GET" action="{{ route('alumno.catalogo') }}" data-filtro-vivo class="mb-4 space-y-3">
         @if (! empty($filters['tipo']))<input type="hidden" name="tipo" value="{{ $filters['tipo'] }}">@endif
