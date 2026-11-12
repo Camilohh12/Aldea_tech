@@ -3,9 +3,6 @@
 @section('title', 'Plantilla del certificado')
 
 @section('content')
-    {{-- Color institucional: los mismos tonos que pdf/certificate.blade.php --}}
-    @php $m = config('aldea.marca'); @endphp
-
 @php
     $field = 'w-full rounded-lg border px-4 py-2.5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container';
     $border = fn ($name) => $errors->has($name) ? 'border-red-400' : 'border-gray-300';
@@ -68,14 +65,18 @@
                 <h2 class="font-heading font-bold text-upp-primary">Encabezado</h2>
 
                 <div>
-                    <label for="institution" class="block text-sm font-semibold text-upp-primary mb-1.5">Institución</label>
+                    <label for="institution" class="block text-sm font-semibold text-upp-primary mb-1.5">
+                        Institución <span class="font-normal text-gray-500">(no se imprime: el escudo ya la muestra)</span>
+                    </label>
                     <input type="text" id="institution" name="institution" maxlength="120" required data-preview-input
                            value="{{ $value('institution') }}" class="{{ $field }} {{ $border('institution') }}">
                     @error('institution') <p class="text-red-600 text-sm mt-1.5">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="event_name" class="block text-sm font-semibold text-upp-primary mb-1.5">Nombre del evento</label>
+                    <label for="event_name" class="block text-sm font-semibold text-upp-primary mb-1.5">
+                        Nombre del evento <span class="font-normal text-gray-500">(se usa en el texto con {evento})</span>
+                    </label>
                     <input type="text" id="event_name" name="event_name" maxlength="120" required data-preview-input
                            value="{{ $value('event_name') }}" class="{{ $field }} {{ $border('event_name') }}">
                     @error('event_name') <p class="text-red-600 text-sm mt-1.5">{{ $message }}</p> @enderror
@@ -97,7 +98,7 @@
                     <div>
                         <label for="title" class="block text-sm font-semibold text-upp-primary mb-1.5">Título</label>
                         <input type="text" id="title" name="title" maxlength="40" required data-preview-input
-                               value="{{ $value('title') }}" placeholder="CONSTANCIA o RECONOCIMIENTO"
+                               value="{{ $value('title') }}" placeholder="RECONOCIMIENTO"
                                class="{{ $field }} {{ $border('title') }}">
                         @error('title') <p class="text-red-600 text-sm mt-1.5">{{ $message }}</p> @enderror
                     </div>
@@ -170,9 +171,9 @@
                         Leyenda al pie <span class="font-normal text-gray-500">(opcional)</span>
                     </label>
                     <input type="text" id="footer" name="footer" maxlength="160" data-preview-input
-                           value="{{ $value('footer') }}" placeholder="Ej. Pachuca de Soto, Hidalgo"
+                           value="{{ $value('footer') }}" placeholder="Normalmente se deja vacío"
                            class="{{ $field }} {{ $border('footer') }}">
-                    <p class="text-xs text-gray-500 mt-1.5">Después se agregan solos la fecha de emisión y el folio.</p>
+                    <p class="text-xs text-gray-500 mt-1.5">Va en letra chica bajo el marco, junto con el folio y la fecha de emisión.</p>
                     @error('footer') <p class="text-red-600 text-sm mt-1.5">{{ $message }}</p> @enderror
                 </div>
             </section>
@@ -201,41 +202,27 @@
                     <p class="text-xs text-gray-500">Ejemplo con {{ $sampleSpeaker->name }}</p>
                 </div>
 
-                <!-- Hoja carta horizontal a escala (11 × 8.5) -->
+                <!-- Hoja carta horizontal a escala (11 × 8.5) con el fondo del formato oficial.
+                     Medidas iguales a pdf/certificate.blade.php: 1cqw = 2.794 mm y 1 pt = 0.1263cqw -->
                 <div class="bg-white rounded-xl shadow-sm p-3">
                     <div class="relative w-full" style="padding-bottom: 77.27%; container-type: inline-size;">
-                        <div class="absolute inset-0 bg-white overflow-hidden" style="font-size: 1.6cqw;">
+                        <div class="absolute inset-0 bg-white overflow-hidden text-black" style="font-family: Inter, sans-serif;">
+                            <img src="{{ asset('img/certificado/fondo-reconocimiento.jpg') }}" alt="" class="absolute inset-0 w-full h-full">
 
-                            <div class="absolute" style="inset: 3.2%; border: 1.1cqw solid {{ $m[800] }};"></div>
-                            <div class="absolute" style="inset: 4.8%; border: 0.15cqw solid {{ $m[300] }};"></div>
+                            <p data-preview="heading" class="absolute text-center font-light" style="top: 26.77%; left: 7.16%; right: 7.16%; font-size: 1.77cqw; line-height: 1.2;"></p>
 
-                            <div class="absolute text-center" style="top: 9%; left: 9%; right: 9%; bottom: 8%; color: #1b1530;">
+                            <p class="absolute text-center font-bold italic" style="top: 31.26%; left: 7.16%; right: 7.16%; font-size: 4.92cqw; line-height: 1.1;">
+                                <span data-preview="title"></span> <span style="font-size: 4.42cqw;">a:</span>
+                            </p>
 
-                                <div class="flex items-center justify-between">
-                                    <img src="{{ asset('img/escudo-upp.png') }}" alt="" class="rounded" style="height: 3.4em; background: {{ $m[900] }}; padding: 0.2em;"
-                                         onerror="this.style.visibility='hidden'">
-                                    <div class="flex-1 px-2">
-                                        <p data-preview="institution" class="font-bold" style="font-size: 0.85em; letter-spacing: 0.22em; color: {{ $m[800] }};"></p>
-                                        <p data-preview="event_name" class="font-serif" style="font-size: 1.15em; color: {{ $m[900] }};"></p>
-                                    </div>
-                                    <div class="text-left" style="border: 0.08em solid {{ $m[200] }}; padding: 0.25em 0.4em; font-size: 0.6em; color: {{ $m[600] }};">
-                                        Folio<br><b style="color: {{ $m[900] }};">AT26-P-00000-000-XXXXXX</b>
-                                    </div>
-                                </div>
-
-                                <p data-preview="heading" style="margin-top: 1.2em; font-size: 0.9em; letter-spacing: 0.1em; color: #475569;"></p>
-                                <p data-preview="title" class="font-serif" style="font-size: 3.4em; line-height: 1.1; letter-spacing: 0.22em; color: {{ $m[800] }};"></p>
-                                <div style="width: 22%; height: 0.15em; background: #c9a227; margin: 0.3em auto 0;"></div>
-
-                                <p style="margin-top: 0.7em; font-size: 0.9em; color: #475569;">a:</p>
-                                <p class="font-serif font-bold" style="font-size: 2.2em; line-height: 1.2;">{{ $sampleSpeaker->name }}</p>
-
-                                <p data-preview="body" style="margin: 0.8em auto 0; width: 82%; font-size: 0.95em; line-height: 1.5; color: #334155;"></p>
-
-                                <div data-preview="signers" class="flex justify-center gap-[10%]" style="margin-top: 1.8em;"></div>
-
-                                <p data-preview="footer" style="margin-top: 1.4em; font-size: 0.62em; color: #94a3b8;"></p>
+                            <div class="absolute text-center" style="top: 41.87%; left: 6.44%; right: 6.44%;">
+                                <p class="font-semibold" style="font-size: {{ mb_strlen($sampleSpeaker->name) <= 36 ? '4.04' : (mb_strlen($sampleSpeaker->name) <= 46 ? '3.28' : '2.78') }}cqw; line-height: 1.12;">{{ $sampleSpeaker->name }}</p>
+                                <p data-preview="body" class="font-light" style="margin: 1.65cqw 2.86cqw 0; font-size: 1.77cqw; line-height: 1.3;"></p>
                             </div>
+
+                            <div data-preview="signers" class="absolute flex justify-around text-center" style="top: 71.65%; left: 10.74%; right: 10.74%;"></div>
+
+                            <p data-preview="footer" class="absolute text-right" style="bottom: 0.4%; right: 7.9%; font-size: 0.82cqw; color: #8a8496;"></p>
                         </div>
                     </div>
                 </div>
@@ -259,7 +246,7 @@
             const defaults = @json($defaults);
             const known = @json(array_keys($variables));
             const issued = @json(now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'));
-            const morado = @json(config('aldea.marca.900')); // tono oscuro del color institucional
+            const negritas = @json(\App\Models\CertificateTemplate::EN_NEGRITAS);
 
             const field = (name) => form.elements[name].value.trim();
             const escape = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -271,11 +258,12 @@
                     return `<span style="background:#fee2e2;color:#b91c1c;">${match}</span>`;
                 }
                 const value = key === 'evento' ? field('event_name') : sample[key];
-                return `<strong style="color:${morado};">${escape(String(value ?? ''))}</strong>`;
+                const text = escape(String(value ?? ''));
+                return negritas.includes(key) ? `<strong class="font-semibold">${text}</strong>` : text;
             });
 
             const update = () => {
-                ['institution', 'event_name', 'heading', 'title'].forEach((name) => {
+                ['heading', 'title'].forEach((name) => {
                     preview(name).textContent = field(name);
                 });
                 preview('body').innerHTML = renderBody();
@@ -283,12 +271,12 @@
                 const signers = [[field('signer1_name'), field('signer1_title')], [field('signer2_name'), field('signer2_title')]]
                     .filter(([name]) => name !== '');
                 preview('signers').innerHTML = signers.map(([name, title]) => `
-                    <div style="width: 32%; border-top: 0.1em solid ${morado}; padding-top: 0.3em;">
-                        <p style="font-size: 0.75em; font-weight: bold; color: ${morado};">${escape(name)}</p>
-                        <p style="font-size: 0.62em; color: #64748b;">${escape(title)}</p>
+                    <div style="width: ${signers.length === 1 ? 100 : 50}%;">
+                        <p style="font-size: 1.58cqw; line-height: 1.2; font-weight: bold;">${escape(name)}</p>
+                        <p style="font-size: 1.52cqw; line-height: 1.25; color: #222;">${escape(title)}</p>
                     </div>`).join('');
 
-                preview('footer').textContent = [field('footer'), `Emitido el ${issued}`, 'Folio AT26-P-00000-000-XXXXXX']
+                preview('footer').textContent = [field('footer'), 'Folio AT26-P-00000-00-XXXXXX', `Emitido el ${issued}`]
                     .filter(Boolean).join(' · ');
             };
 
