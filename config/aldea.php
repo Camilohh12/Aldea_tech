@@ -27,7 +27,6 @@ return [
     // Programas que aparecen en el registro.
     'carreras' => [
         'Ingeniería en Tecnologías de la Información e Innovación Digital',
-        'Ingeniería en Redes y Telecomunicaciones',
         'Ingeniería en Software',
     ],
 
@@ -44,7 +43,6 @@ return [
     // «Irregular» / «Otro»; con esas dos opciones cuenta en el grupo de su tutor.
     'prefijos_grupo' => [
         'Ingeniería en Tecnologías de la Información e Innovación Digital' => 'TIID',
-        'Ingeniería en Redes y Telecomunicaciones' => 'REDTE', // provisional, falta confirmar
         'Ingeniería en Software' => 'STFW',
     ],
 

@@ -150,7 +150,7 @@ class ModuloAlumnoSeeder extends Seeder
         $redes = User::firstOrCreate(
             ['email' => 'alumno3@aldea.edu.mx'],
             ['name' => 'Luis Fernando Castro Vega', 'password' => Hash::make('password123'), 'matricula' => '202308344',
-                'carrera' => 'Ingeniería en Redes y Telecomunicaciones', 'cuatrimestre' => '5', 'email_verified_at' => now()],
+                'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '5', 'email_verified_at' => now()],
         );
         $redes->assignRole($rolAlumno);
 

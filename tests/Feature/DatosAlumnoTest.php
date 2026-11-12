@@ -113,13 +113,13 @@ class DatosAlumnoTest extends TestCase
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => 'Ana Torres',
             'email' => 'ana.torres@upp.edu.mx',
-            'carrera' => 'Ingeniería en Redes y Telecomunicaciones',
+            'carrera' => 'Ingeniería en Tecnologías de la Información e Innovación Digital',
             'cuatrimestre' => 'Otro',
         ])->assertSessionHasNoErrors()->assertRedirect(route('profile.edit'));
 
         $alumno->refresh();
         $this->assertSame('Otro', $alumno->cuatrimestre);
-        $this->assertSame('Ingeniería en Redes y Telecomunicaciones', $alumno->carrera);
+        $this->assertSame('Ingeniería en Tecnologías de la Información e Innovación Digital', $alumno->carrera);
         $this->assertSame('regular', $alumno->estatus);
 
         // Y se puede volver a editar: al elegir «Irregular» cambia su situación

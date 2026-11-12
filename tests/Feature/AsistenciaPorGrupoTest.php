@@ -128,7 +128,7 @@ class AsistenciaPorGrupoTest extends TestCase
         $this->assertSame(['STFW_09_02'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['q' => 'STFW_09_02']))));
         $this->assertSame(['STFW_09_01', 'STFW_09_02'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => '9']))));
         $this->assertSame([], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => '3']))));
-        $this->assertSame([], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['carrera' => 'Ingeniería en Redes y Telecomunicaciones']))));
+        $this->assertSame([], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['carrera' => 'Ingeniería en Tecnologías de la Información e Innovación Digital']))));
 
         // Filtros manipulados no rompen la página
         $this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => ['x'], 'carrera' => "' OR 1=1 --"]))->assertOk();
