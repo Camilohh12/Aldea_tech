@@ -119,7 +119,7 @@
                             @foreach ($tutores->groupBy(fn ($tutor) => $tutor->carrera ?: 'Otros tutores')->sortKeys() as $grupo => $lista)
                                 <optgroup label="{{ $grupo }}">
                                     @foreach ($lista as $tutor)
-                                        <option value="{{ $tutor->id }}" @selected((string) old('tutor_id') === (string) $tutor->id)>{{ $tutor->name }}</option>
+                                        <option value="{{ $tutor->id }}" @selected((string) old('tutor_id') === (string) $tutor->id)>{{ $tutor->etiquetaTutor() }}</option>
                                     @endforeach
                                 </optgroup>
                             @endforeach

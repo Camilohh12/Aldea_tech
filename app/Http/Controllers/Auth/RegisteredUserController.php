@@ -23,9 +23,14 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        // Tutores para que el alumno elija al suyo (agrupados por carrera en la vista)
+        // Tutores para que el alumno elija al suyo (agrupados por carrera en la vista,
+        // primero los que tienen grupo y en orden de grupo)
         return view('auth.register', [
-            'tutores' => $this->tutores()->orderBy('name')->get(['id', 'name', 'carrera']),
+            'tutores' => $this->tutores()
+                ->orderByRaw('grupos_tutoria IS NULL')
+                ->orderBy('grupos_tutoria')
+                ->orderBy('name')
+                ->get(['id', 'name', 'carrera', 'grupos_tutoria']),
         ]);
     }
 

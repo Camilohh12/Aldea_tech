@@ -100,7 +100,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
                     </svg>
                     <input type="search" name="q" value="{{ $search }}"
-                           placeholder="Buscar por nombre o correo..."
+                           placeholder="Buscar por grupo, nombre o correo..."
                            class="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container">
                 </div>
 
@@ -125,6 +125,7 @@
 
                 <thead class="bg-upp-surface-low text-upp-secondary text-xs uppercase tracking-wider">
                     <tr>
+                        <th class="px-4 lg:px-6 py-3 font-semibold">Grupo</th>
                         <th class="px-4 lg:px-6 py-3 font-semibold">Tutor</th>
                         <th class="px-4 lg:px-6 py-3 font-semibold">Carrera</th>
                         <th class="px-4 lg:px-6 py-3 font-semibold">Alumnos</th>
@@ -143,6 +144,18 @@
                         @endphp
                         <tr class="hover:bg-upp-surface/60">
 
+                            <td class="px-4 lg:px-6 py-4 align-middle">
+                                @if ($tutor->grupos_tutoria)
+                                    <div class="flex flex-col gap-1">
+                                        @foreach (explode(', ', $tutor->grupos_tutoria) as $codigo)
+                                            <span class="inline-flex w-fit px-2 py-0.5 rounded-md font-mono text-xs font-semibold bg-upp-secondary-container/60 text-upp-primary-container whitespace-nowrap">{{ $codigo }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+
                             <td class="px-4 lg:px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <span class="w-9 h-9 rounded-full bg-upp-surface-high text-upp-primary-container flex items-center justify-center font-bold text-xs shrink-0">
@@ -150,7 +163,11 @@
                                     </span>
                                     <div class="min-w-0">
                                         <p class="font-semibold text-upp-primary">{{ $tutor->name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $tutor->email }}</p>
+                                        @if ($tutor->correoPendiente())
+                                            <p class="text-xs text-amber-700">Sin acceso · falta su correo</p>
+                                        @else
+                                            <p class="text-xs text-gray-500">{{ $tutor->email }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -222,7 +239,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 lg:px-6 py-12 text-center text-gray-500">
+                            <td colspan="6" class="px-4 lg:px-6 py-12 text-center text-gray-500">
                                 @if ($search !== '')
                                     No se encontraron tutores para «{{ $search }}».
                                 @else

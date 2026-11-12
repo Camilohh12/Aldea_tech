@@ -27,9 +27,13 @@ class TutorController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('grupos_tutoria', 'like', "%{$search}%");
                 });
             })
+            // Primero los que tienen grupo, en orden de grupo (TIID_01_01, TIID_01_02…)
+            ->orderByRaw('grupos_tutoria IS NULL')
+            ->orderBy('grupos_tutoria')
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -59,6 +63,7 @@ class TutorController extends Controller
             'name' => $validated['name'],
             'email' => Str::lower($validated['email']),
             'carrera' => $validated['carrera'] ?? null,
+            'grupos_tutoria' => self::normalizarGrupos($validated['grupos_tutoria'] ?? null),
             'password' => $validated['password'],
         ]);
 
@@ -95,6 +100,7 @@ class TutorController extends Controller
             'name' => $validated['name'],
             'email' => Str::lower($validated['email']),
             'carrera' => $validated['carrera'] ?? null,
+            'grupos_tutoria' => self::normalizarGrupos($validated['grupos_tutoria'] ?? null),
         ];
 
         if (! empty($validated['password'])) {
@@ -200,6 +206,23 @@ class TutorController extends Controller
         return back()->with('success', "{$alumno->name} ya no está asignado a {$tutor->name}.");
     }
 
+    // «tiid_1_2,  tiid_04_01» → «TIID_01_02, TIID_04_01» (sin repetir y en orden)
+    public static function normalizarGrupos(?string $grupos): ?string
+    {
+        $codigos = collect(preg_split('/\s*,\s*/', trim((string) $grupos)))
+            ->filter()
+            ->map(function (string $codigo) {
+                [$prefijo, $a, $b] = explode('_', $codigo);
+
+                return Str::upper($prefijo) . '_' . str_pad($a, 2, '0', STR_PAD_LEFT) . '_' . str_pad($b, 2, '0', STR_PAD_LEFT);
+            })
+            ->unique()
+            ->sort()
+            ->values();
+
+        return $codigos->isEmpty() ? null : $codigos->implode(', ');
+    }
+
     // Solo se gestionan usuarios con el rol de tutor
     private function ensureIsTutor(User $user): void
     {
@@ -247,6 +270,8 @@ class TutorController extends Controller
                 Rule::unique('users', 'email')->ignore($user?->id),
             ],
             'carrera' => ['nullable', Rule::in(config('aldea.carreras'))],
+            // Uno o varios grupos separados por comas: TIID_01_02, TIID_04_01
+            'grupos_tutoria' => ['nullable', 'string', 'max:160', 'regex:/^\s*[A-Za-z]{2,6}_\d{1,2}_\d{1,2}(\s*,\s*[A-Za-z]{2,6}_\d{1,2}_\d{1,2})*\s*,?\s*$/'],
             'password' => [
                 $user ? 'nullable' : 'required',
                 'string', 'min:8', 'confirmed',
@@ -265,6 +290,8 @@ class TutorController extends Controller
             'email.max' => 'El correo no puede tener más de 255 caracteres.',
             'email.unique' => 'Ya existe un usuario con ese correo.',
             'carrera.in' => 'Selecciona una carrera de la lista.',
+            'grupos_tutoria.regex' => 'Escribe los grupos como TIID_01_02; si son varios, sepáralos con comas.',
+            'grupos_tutoria.max' => 'Son demasiados grupos para un tutor.',
             'password.required' => 'La contraseña temporal es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',

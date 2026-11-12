@@ -5,6 +5,23 @@
     $border = fn ($name) => $errors->has($name) ? 'border-red-400' : 'border-gray-300';
 @endphp
 
+<!-- Grupos -->
+<div class="mb-6">
+    <label for="grupos_tutoria" class="block text-sm font-semibold text-upp-primary mb-2">
+        Grupos que atiende <span class="font-normal text-gray-500">(opcional)</span>
+    </label>
+    <input type="text" id="grupos_tutoria" name="grupos_tutoria" maxlength="160" autocomplete="off"
+           value="{{ old('grupos_tutoria', $tutor?->grupos_tutoria) }}"
+           placeholder="Ej. TIID_01_02, TIID_04_01"
+           pattern="\s*[A-Za-z]{2,6}_\d{1,2}_\d{1,2}(\s*,\s*[A-Za-z]{2,6}_\d{1,2}_\d{1,2})*\s*,?\s*"
+           title="Escribe los grupos como TIID_01_02; si son varios, sepáralos con comas."
+           class="{{ $field }} {{ $border('grupos_tutoria') }} font-mono uppercase">
+    <p class="text-xs mt-2 text-gray-500">Aparecen al principio del nombre del tutor en la lista y en el registro de alumnos.</p>
+    @error('grupos_tutoria')
+        <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
+    @enderror
+</div>
+
 <!-- Nombre -->
 <div class="mb-6">
     <label for="name" class="block text-sm font-semibold text-upp-primary mb-2">
@@ -29,7 +46,11 @@
            value="{{ old('email', $tutor?->email) }}"
            placeholder="Ej. lgomez@upp.edu.mx"
            class="{{ $field }} {{ $border('email') }}">
-    <p class="text-xs mt-2 text-gray-500">Con este correo iniciará sesión.</p>
+    @if ($tutor?->correoPendiente() && ! $errors->has('email'))
+        <p class="text-xs mt-2 text-amber-700">Correo provisional: escribe su correo real y genera una contraseña para darle acceso.</p>
+    @else
+        <p class="text-xs mt-2 text-gray-500">Con este correo iniciará sesión.</p>
+    @endif
     @error('email')
         <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
     @enderror
