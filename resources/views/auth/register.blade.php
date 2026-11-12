@@ -60,7 +60,7 @@
 
             {{-- Carrera, cuatrimestre y grupo (de la lista de la coordinación, o «Irregular» / «Otro») --}}
             <div x-data="grupoAlumno(@js((string) old('grupo', '')), @js((string) old('cuatrimestre', '')), @js($tutorPorGrupo))">
-            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_10rem]">
+            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_12rem]">
                 {{-- Carrera --}}
                 <div>
                     <label for="carrera" class="text-sm font-semibold">Carrera / Programa <span class="text-red-600">*</span></label>

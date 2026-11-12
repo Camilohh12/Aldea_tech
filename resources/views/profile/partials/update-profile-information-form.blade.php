@@ -36,7 +36,7 @@
         @if ($esAlumno)
             @php $grupoActual = (string) old('grupo', $user->grupo); @endphp
             <div x-data="grupoAlumno(@js($grupoActual), @js((string) old('cuatrimestre', $user->cuatrimestre ?? '')), {})">
-            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_10rem]">
+            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_12rem]">
                 <div>
                     <label for="carrera" class="text-sm font-semibold">Carrera / Programa</label>
                     <div class="relative mt-1.5">
