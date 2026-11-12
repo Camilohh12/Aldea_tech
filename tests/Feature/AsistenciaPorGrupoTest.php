@@ -70,9 +70,9 @@ class AsistenciaPorGrupoTest extends TestCase
         $redes = $this->actividad('Taller de Redes', 2);
         $ia = $this->actividad('Conferencia de IA', 20);
 
-        $ana = $this->alumno('Ana Torres', 'sftw_01_09');
-        $beto = $this->alumno('Beto Ruiz', 'sftw_01_09');
-        $carla = $this->alumno('Carla Díaz', 'sftw_02_09');
+        $ana = $this->alumno('Ana Torres', 'STFW_09_01');
+        $beto = $this->alumno('Beto Ruiz', 'STFW_09_01');
+        $carla = $this->alumno('Carla Díaz', 'STFW_09_02');
         $irregular = $this->alumno('Iván Irregular', null, 'Irregular');
         $sinGrupo = $this->alumno('Sofía Sin Grupo', null, '7');
 
@@ -98,22 +98,22 @@ class AsistenciaPorGrupoTest extends TestCase
 
         $respuesta = $this->actingAs($this->admin)->get(route('admin.attendances.groups'))->assertOk();
 
-        $respuesta->assertSeeInOrder(['sftw_01_09', 'sftw_02_09', 'Sin grupo'])
-            ->assertSeeInOrder(['sftw_01_09', 'Software', '· Grupo 1 · 9°']);
+        $respuesta->assertSeeInOrder(['STFW_09_01', 'STFW_09_02', 'Sin grupo'])
+            ->assertSeeInOrder(['STFW_09_01', 'Software', '· Grupo 1 · 9°']);
 
         $grupos = collect($respuesta->viewData('grupos')->items())->keyBy('clave');
 
-        // Ana, Beto y el irregular (su tutor tiene más tutorados en sftw_01_09)
-        $this->assertSame(3, $grupos['sftw_01_09']->alumnos);
-        $this->assertSame(1, $grupos['sftw_01_09']->porTutor);
-        $this->assertSame(2, $grupos['sftw_01_09']->asistieron);
-        $this->assertSame(4, $grupos['sftw_01_09']->inscripciones);
-        $this->assertSame(3, $grupos['sftw_01_09']->asistencias);
-        $this->assertSame(1, $grupos['sftw_01_09']->acreditados);
-        $this->assertEquals(24.0, $grupos['sftw_01_09']->horas);
+        // Ana, Beto y el irregular (su tutor tiene más tutorados en STFW_09_01)
+        $this->assertSame(3, $grupos['STFW_09_01']->alumnos);
+        $this->assertSame(1, $grupos['STFW_09_01']->porTutor);
+        $this->assertSame(2, $grupos['STFW_09_01']->asistieron);
+        $this->assertSame(4, $grupos['STFW_09_01']->inscripciones);
+        $this->assertSame(3, $grupos['STFW_09_01']->asistencias);
+        $this->assertSame(1, $grupos['STFW_09_01']->acreditados);
+        $this->assertEquals(24.0, $grupos['STFW_09_01']->horas);
 
-        $this->assertSame(1, $grupos['sftw_02_09']->alumnos);
-        $this->assertSame(0, $grupos['sftw_02_09']->asistencias);
+        $this->assertSame(1, $grupos['STFW_09_02']->alumnos);
+        $this->assertSame(0, $grupos['STFW_09_02']->asistencias);
         $this->assertSame(1, $grupos['sin-grupo']->alumnos);
 
         $this->assertSame(1, $respuesta->viewData('stats')['sinGrupo']);
@@ -125,8 +125,8 @@ class AsistenciaPorGrupoTest extends TestCase
         $this->escenario();
         $claves = fn ($respuesta) => collect($respuesta->viewData('grupos')->items())->pluck('clave')->all();
 
-        $this->assertSame(['sftw_02_09'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['q' => 'SFTW_02']))));
-        $this->assertSame(['sftw_01_09', 'sftw_02_09'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => '9']))));
+        $this->assertSame(['STFW_09_02'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['q' => 'STFW_09_02']))));
+        $this->assertSame(['STFW_09_01', 'STFW_09_02'], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => '9']))));
         $this->assertSame([], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['cuatrimestre' => '3']))));
         $this->assertSame([], $claves($this->actingAs($this->admin)->get(route('admin.attendances.groups', ['carrera' => 'Ingeniería en Redes y Telecomunicaciones']))));
 
@@ -138,7 +138,7 @@ class AsistenciaPorGrupoTest extends TestCase
     {
         $this->escenario();
 
-        $this->actingAs($this->admin)->get(route('admin.attendances.group', 'sftw_01_09'))->assertOk()
+        $this->actingAs($this->admin)->get(route('admin.attendances.group', 'STFW_09_01'))->assertOk()
             ->assertSee('Ingeniería en Software')
             ->assertSee('Grupo 1 · 9° cuatrimestre')
             ->assertSee('Mtra. Laura Gómez')
@@ -149,9 +149,9 @@ class AsistenciaPorGrupoTest extends TestCase
             ->assertSee('Acreditado');
 
         // Búsqueda y pestaña por estado
-        $this->actingAs($this->admin)->get(route('admin.attendances.group', ['grupo' => 'sftw_01_09', 'q' => 'beto']))
+        $this->actingAs($this->admin)->get(route('admin.attendances.group', ['grupo' => 'STFW_09_01', 'q' => 'beto']))
             ->assertSee('Beto Ruiz')->assertDontSee('Ana Torres');
-        $this->actingAs($this->admin)->get(route('admin.attendances.group', ['grupo' => 'sftw_01_09', 'estado' => 'acreditado']))
+        $this->actingAs($this->admin)->get(route('admin.attendances.group', ['grupo' => 'STFW_09_01', 'estado' => 'acreditado']))
             ->assertSee('Ana Torres')->assertDontSee('Beto Ruiz');
     }
 
@@ -169,19 +169,19 @@ class AsistenciaPorGrupoTest extends TestCase
     {
         $this->escenario();
 
-        $this->actingAs($this->admin)->get('/admin/asistencias/grupos/sftw_05_01')->assertNotFound();
-        $this->actingAs($this->admin)->get('/admin/asistencias/grupos/SFTW-01')->assertNotFound();
+        $this->actingAs($this->admin)->get('/admin/asistencias/grupos/STFW_01_05')->assertNotFound();
+        $this->actingAs($this->admin)->get('/admin/asistencias/grupos/STFW-01')->assertNotFound();
         $this->actingAs($this->admin)->get('/admin/asistencias/grupos/1%20OR%201=1')->assertNotFound();
     }
 
     public function test_descarga_la_lista_del_grupo_en_csv(): void
     {
         $this->escenario();
-        $this->alumno('=HIPERVINCULO("x")', 'sftw_02_09');
+        $this->alumno('=HIPERVINCULO("x")', 'STFW_09_02');
 
-        $csv = $this->actingAs($this->admin)->get(route('admin.attendances.group.export', 'sftw_01_09'))
+        $csv = $this->actingAs($this->admin)->get(route('admin.attendances.group.export', 'STFW_09_01'))
             ->assertOk()
-            ->assertHeader('content-disposition', 'attachment; filename=asistencia-grupo-sftw_01_09.csv')
+            ->assertHeader('content-disposition', 'attachment; filename=asistencia-grupo-STFW_09_01.csv')
             ->streamedContent();
 
         $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
@@ -191,7 +191,7 @@ class AsistenciaPorGrupoTest extends TestCase
         $this->assertStringNotContainsString('Carla Díaz', $csv);
 
         // Un nombre con fórmula sale como texto, no se ejecuta en Excel
-        $otro = $this->actingAs($this->admin)->get(route('admin.attendances.group.export', 'sftw_02_09'))->streamedContent();
+        $otro = $this->actingAs($this->admin)->get(route('admin.attendances.group.export', 'STFW_09_02'))->streamedContent();
         $this->assertStringContainsString('"\'=HIPERVINCULO(""x"")"', $otro);
     }
 
@@ -201,7 +201,7 @@ class AsistenciaPorGrupoTest extends TestCase
 
         $csv = $this->actingAs($this->admin)->get(route('admin.attendances.groups.export'))->assertOk()->streamedContent();
 
-        $this->assertStringContainsString('sftw_01_09,"Ingeniería en Software",9,1,3,1,2,4,3,24,1,"Mtra. Laura Gómez"', $csv);
+        $this->assertStringContainsString('STFW_09_01,"Ingeniería en Software",9,1,3,1,2,4,3,24,1,"Mtra. Laura Gómez"', $csv);
         $this->assertStringContainsString('"Sin grupo"', $csv);
     }
 
@@ -211,7 +211,7 @@ class AsistenciaPorGrupoTest extends TestCase
         $alumno = User::role('alumno')->first();
 
         $this->actingAs($alumno)->get(route('admin.attendances.groups'))->assertForbidden();
-        $this->actingAs($this->tutor)->get(route('admin.attendances.group', 'sftw_01_09'))->assertForbidden();
+        $this->actingAs($this->tutor)->get(route('admin.attendances.group', 'STFW_09_01'))->assertForbidden();
         $this->actingAs($this->tutor)->get(route('admin.attendances.groups.export'))->assertForbidden();
     }
 }

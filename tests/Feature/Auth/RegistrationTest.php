@@ -77,7 +77,7 @@ class RegistrationTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => 7,
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Password123',
             'password_confirmation' => 'Password123',

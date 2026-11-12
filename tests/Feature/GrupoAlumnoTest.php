@@ -9,8 +9,9 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Grupo del alumno: escribe solo el número y se guarda el código
- * prefijo_grupo_cuatrimestre (sftw_01_09). «Irregular» y «Otro» quedan en el grupo de su tutor.
+ * Grupo del alumno: lo elige de la lista de la coordinación (TIID_01_02 =
+ * TIID, 1er cuatrimestre, grupo 2) o «Irregular» / «Otro», que cuentan en el
+ * grupo de su tutor.
  */
 class GrupoAlumnoTest extends TestCase
 {
@@ -32,7 +33,7 @@ class GrupoAlumnoTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => '9',
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Password123',
             'password_confirmation' => 'Password123',
@@ -56,79 +57,79 @@ class GrupoAlumnoTest extends TestCase
         ], $datos))->assignRole('alumno');
     }
 
-    public function test_el_registro_pide_el_grupo_con_un_ejemplo(): void
+    public function test_el_registro_muestra_la_lista_de_grupos(): void
     {
         $this->get('/register')->assertOk()
-            ->assertSee('name="grupo"', false)
-            ->assertSee('placeholder="Ej. 1"', false)
-            ->assertSee('quedas en el grupo de tu tutor');
+            ->assertSee('<select id="grupo" name="grupo"', false)
+            ->assertSeeInOrder(['TIID_01_01', 'TIID_01_02', 'TIID_07_02', 'STFW_09_01', 'Irregular', 'Otro'], false)
+            ->assertSee('cuentas en el grupo de tu tutor');
     }
 
-    public function test_el_registro_guarda_el_codigo_completo(): void
+    public function test_el_registro_guarda_el_grupo_elegido(): void
     {
-        $this->post('/register', $this->datos())->assertSessionHasNoErrors();
-        $this->assertSame('sftw_01_09', $this->registrado()->grupo);
+        $this->post('/register', $this->datos(['grupo' => 'TIID_04_02']))->assertSessionHasNoErrors();
+        $this->assertSame('TIID_04_02', $this->registrado()->grupo);
+        $this->assertSame('regular', $this->registrado()->estatus);
     }
 
-    public function test_el_codigo_usa_el_prefijo_de_cada_carrera(): void
-    {
-        $this->post('/register', $this->datos([
-            'carrera' => 'Ingeniería en Tecnologías de la Información e Innovación Digital',
-            'cuatrimestre' => '1',
-            'grupo' => '02', // también con cero adelante
-        ]))->assertSessionHasNoErrors();
-
-        $this->assertSame('tiid_02_01', $this->registrado()->grupo);
-        $this->assertSame('redte_03_10', Grupo::codigo('Ingeniería en Redes y Telecomunicaciones', '10', 3));
-    }
-
-    public function test_el_grupo_es_obligatorio_y_solo_un_numero(): void
+    public function test_el_grupo_es_obligatorio_y_de_la_lista(): void
     {
         $this->post('/register', $this->datos(['grupo' => '']))
-            ->assertSessionHasErrors(['grupo' => 'Escribe el número de tu grupo, por ejemplo 1.']);
+            ->assertSessionHasErrors(['grupo' => 'Selecciona tu grupo.']);
 
-        foreach (['A', '1A', '0', '100', '-1', 'sftw_01_09'] as $malo) {
+        foreach (['1', 'TIID_99_99', 'tiid_01_01x', 'sftw_01_09'] as $malo) {
             $this->post('/register', $this->datos(['grupo' => $malo]))
-                ->assertSessionHasErrors(['grupo' => 'Escribe solo el número de tu grupo (del 1 al 99), por ejemplo 1.']);
+                ->assertSessionHasErrors(['grupo' => 'Selecciona tu grupo de la lista.']);
         }
 
         $this->assertGuest();
     }
 
-    public function test_irregular_u_otro_no_capturan_grupo(): void
+    public function test_irregular_u_otro_se_eligen_como_grupo(): void
     {
-        // Aunque llegue un número, no se guarda: quedan en el grupo de su tutor
-        $this->post('/register', $this->datos(['cuatrimestre' => 'Irregular', 'grupo' => '3']))->assertSessionHasNoErrors();
-        $this->assertNull($this->registrado()->grupo);
+        $this->post('/register', $this->datos(['grupo' => 'Irregular']))->assertSessionHasNoErrors();
+        $this->assertSame('Irregular', $this->registrado()->grupo);
+        $this->assertSame('irregular', $this->registrado()->estatus);
 
         auth()->logout();
         $this->post('/register', $this->datos([
-            'matricula' => '2023084922', 'email' => 'otro@micorreo.upp.edu.mx', 'cuatrimestre' => 'Otro', 'grupo' => null,
+            'matricula' => '2023084922', 'email' => 'otro@micorreo.upp.edu.mx', 'grupo' => 'Otro',
         ]))->assertSessionHasNoErrors();
-        $this->assertNull(User::where('matricula', '2023084922')->value('grupo'));
+        $this->assertSame('Otro', User::where('matricula', '2023084922')->value('grupo'));
     }
 
-    public function test_el_perfil_muestra_el_numero_y_actualiza_el_codigo(): void
+    public function test_los_grupos_de_los_tutores_tambien_aparecen(): void
     {
-        $alumno = $this->alumno(['grupo' => 'sftw_02_07']);
+        $tutor = User::factory()->create(['grupos_tutoria' => 'TIID_02_01, STFW_08_01'])->assignRole('tutor');
+
+        $this->assertContains('TIID_02_01', Grupo::opciones());
+        $this->assertSame($tutor->id, Grupo::tutorPorGrupo()['STFW_08_01']);
+
+        $this->get('/register')->assertOk()->assertSee('STFW_08_01');
+        $this->post('/register', $this->datos(['grupo' => 'STFW_08_01', 'tutor_id' => $tutor->id]))->assertSessionHasNoErrors();
+        $this->assertSame('STFW_08_01', $this->registrado()->grupo);
+    }
+
+    public function test_el_perfil_muestra_y_cambia_el_grupo(): void
+    {
+        $alumno = $this->alumno(['grupo' => 'TIID_07_01']);
 
         $this->actingAs($alumno)->get(route('profile.edit'))->assertOk()
-            ->assertSee('name="grupo"', false)
-            ->assertSee('value="2"', false);
+            ->assertSee('<select id="grupo" name="grupo"', false)
+            ->assertSee('<option value="TIID_07_01" selected', false);
 
-        // Pasa a 8°: el código se vuelve a armar
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => 'Ana Torres', 'email' => $alumno->email,
-            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '8', 'grupo' => '2',
+            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'TIID_07_02',
         ])->assertSessionHasNoErrors();
-        $this->assertSame('sftw_02_08', $alumno->fresh()->grupo);
+        $this->assertSame('TIID_07_02', $alumno->fresh()->grupo);
 
-        // Si cambia a irregular deja de tener grupo propio
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => 'Ana Torres', 'email' => $alumno->email,
-            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => 'Irregular',
+            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'Irregular',
         ])->assertSessionHasNoErrors();
-        $this->assertNull($alumno->fresh()->grupo);
+        $this->assertSame('Irregular', $alumno->fresh()->grupo);
+        $this->assertSame('irregular', $alumno->fresh()->estatus);
     }
 
     public function test_una_cuenta_sin_grupo_lo_captura_al_guardar_su_perfil(): void
@@ -142,9 +143,9 @@ class GrupoAlumnoTest extends TestCase
 
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => 'Ana Torres', 'email' => $alumno->email,
-            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => '3',
+            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'TIID_07_01',
         ])->assertSessionHasNoErrors();
-        $this->assertSame('sftw_03_07', $alumno->fresh()->grupo);
+        $this->assertSame('TIID_07_01', $alumno->fresh()->grupo);
     }
 
     public function test_el_perfil_de_otros_roles_no_pide_grupo(): void
@@ -156,41 +157,45 @@ class GrupoAlumnoTest extends TestCase
             ->assertSessionHasNoErrors();
     }
 
-    public function test_partes_y_numero_del_codigo(): void
+    public function test_partes_del_codigo(): void
     {
-        $this->assertSame(['carrera' => 'Ingeniería en Software', 'numero' => 1, 'cuatrimestre' => 9], Grupo::partes('sftw_01_09'));
-        $this->assertSame(2, Grupo::numero('tiid_02_01'));
-        $this->assertNull(Grupo::partes('xyz_01_01'));   // prefijo que no es de ninguna carrera
-        $this->assertNull(Grupo::partes('sftw-01-09'));
-        $this->assertNull(Grupo::codigo('Ingeniería en Software', 'Irregular', 1));
-        $this->assertNull(Grupo::codigo('Otra carrera', '3', 1));
+        $this->assertSame(['carrera' => 'Ingeniería en Software', 'cuatrimestre' => 9, 'numero' => 1], Grupo::partes('STFW_09_01'));
+        $this->assertSame('Grupo 2 · 1° cuatrimestre', Grupo::descripcion('TIID_01_02'));
+        $this->assertNull(Grupo::partes('XYZ_01_01'));   // prefijo que no es de ninguna carrera
+        $this->assertNull(Grupo::partes('STFW-09-01'));
+        $this->assertTrue(Grupo::esCodigo('TIID_01_02'));
+        $this->assertFalse(Grupo::esCodigo('Irregular'));
     }
 
-    public function test_el_irregular_queda_en_el_grupo_de_su_tutor(): void
+    public function test_irregular_u_otro_cuentan_en_el_grupo_de_su_tutor(): void
     {
         $tutor = User::factory()->create()->assignRole('tutor');
-        $otroTutor = User::factory()->create()->assignRole('tutor');
+        $otroTutor = User::factory()->create(['grupos_tutoria' => 'TIID_06_01'])->assignRole('tutor');
+        $tutorSinGrupo = User::factory()->create()->assignRole('tutor');
 
-        $a = $this->alumno(['matricula' => '2023000001', 'email' => 'a@upp.edu.mx', 'grupo' => 'sftw_01_09', 'tutor_id' => $tutor->id]);
-        $b = $this->alumno(['matricula' => '2023000002', 'email' => 'b@upp.edu.mx', 'grupo' => 'sftw_01_09', 'tutor_id' => $tutor->id]);
-        $c = $this->alumno(['matricula' => '2023000003', 'email' => 'c@upp.edu.mx', 'grupo' => 'sftw_02_09', 'tutor_id' => $tutor->id]);
-        $irregular = $this->alumno(['matricula' => '2023000004', 'email' => 'd@upp.edu.mx', 'cuatrimestre' => 'Irregular', 'tutor_id' => $tutor->id]);
-        $irregularSinGrupo = $this->alumno(['matricula' => '2023000005', 'email' => 'e@upp.edu.mx', 'cuatrimestre' => 'Otro', 'tutor_id' => $otroTutor->id]);
-        $regularSinCapturar = $this->alumno(['matricula' => '2023000006', 'email' => 'f@upp.edu.mx', 'tutor_id' => $tutor->id]);
-        $sinCuatrimestre = $this->alumno(['matricula' => '2023000007', 'email' => 'g@upp.edu.mx', 'cuatrimestre' => null, 'tutor_id' => $tutor->id]);
+        $a = $this->alumno(['matricula' => '2023000001', 'email' => 'a@upp.edu.mx', 'grupo' => 'STFW_09_01', 'tutor_id' => $tutor->id]);
+        $b = $this->alumno(['matricula' => '2023000002', 'email' => 'b@upp.edu.mx', 'grupo' => 'STFW_09_01', 'tutor_id' => $tutor->id]);
+        $c = $this->alumno(['matricula' => '2023000003', 'email' => 'c@upp.edu.mx', 'grupo' => 'STFW_09_02', 'tutor_id' => $tutor->id]);
+        $irregular = $this->alumno(['matricula' => '2023000004', 'email' => 'd@upp.edu.mx', 'grupo' => 'Irregular', 'tutor_id' => $tutor->id]);
+        $otro = $this->alumno(['matricula' => '2023000005', 'email' => 'e@upp.edu.mx', 'grupo' => 'Otro', 'tutor_id' => $otroTutor->id]);
+        $sinGrupoDelTutor = $this->alumno(['matricula' => '2023000006', 'email' => 'f@upp.edu.mx', 'grupo' => 'Otro', 'tutor_id' => $tutorSinGrupo->id]);
+        $regularSinCapturar = $this->alumno(['matricula' => '2023000007', 'email' => 'g@upp.edu.mx', 'tutor_id' => $tutor->id]);
+        $cuentaAnterior = $this->alumno(['matricula' => '2023000008', 'email' => 'h@upp.edu.mx', 'cuatrimestre' => 'Irregular', 'tutor_id' => $tutor->id]);
 
         $grupos = Grupo::resolver(User::role('alumno')->get());
 
-        $this->assertSame(['grupo' => 'sftw_01_09', 'por_tutor' => false], $grupos[$a->id]);
-        $this->assertSame('sftw_02_09', $grupos[$c->id]['grupo']);
+        $this->assertSame(['grupo' => 'STFW_09_01', 'por_tutor' => false], $grupos[$a->id]);
+        $this->assertSame('STFW_09_02', $grupos[$c->id]['grupo']);
         // El grupo que más se repite entre los tutorados de su tutor
-        $this->assertSame(['grupo' => 'sftw_01_09', 'por_tutor' => true], $grupos[$irregular->id]);
-        // Su tutor no tiene tutorados con grupo
-        $this->assertSame(['grupo' => null, 'por_tutor' => false], $grupos[$irregularSinGrupo->id]);
+        $this->assertSame(['grupo' => 'STFW_09_01', 'por_tutor' => true], $grupos[$irregular->id]);
+        // Sin tutorados con grupo: el grupo que atiende su tutor
+        $this->assertSame(['grupo' => 'TIID_06_01', 'por_tutor' => true], $grupos[$otro->id]);
+        // Su tutor no tiene grupo de ninguna forma
+        $this->assertSame(['grupo' => null, 'por_tutor' => false], $grupos[$sinGrupoDelTutor->id]);
         // Un regular sin capturar no se adivina: debe capturarlo
         $this->assertSame(['grupo' => null, 'por_tutor' => false], $grupos[$regularSinCapturar->id]);
-        // Sin cuatrimestre (cuentas anteriores) tampoco: no es «Irregular» ni «Otro»
-        $this->assertSame(['grupo' => null, 'por_tutor' => false], $grupos[$sinCuatrimestre->id]);
-        $this->assertSame('sftw_01_09', $grupos[$b->id]['grupo']);
+        // Cuentas anteriores con cuatrimestre «Irregular» y sin grupo siguen contando con su tutor
+        $this->assertSame(['grupo' => 'STFW_09_01', 'por_tutor' => true], $grupos[$cuentaAnterior->id]);
+        $this->assertSame('STFW_09_01', $grupos[$b->id]['grupo']);
     }
 }

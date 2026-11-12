@@ -58,9 +58,9 @@
                 </div>
             </div>
 
-            {{-- Carrera, cuatrimestre y grupo: el código del grupo (sftw_01_09) se arma solo --}}
-            <div x-data="grupoAlumno(@js(old('carrera', '')), @js((string) old('cuatrimestre', '')), @js((string) old('grupo', '')), @js(config('aldea.prefijos_grupo')))">
-            <div class="grid gap-5 sm:grid-cols-[1fr_9rem_7rem]">
+            {{-- Carrera, cuatrimestre y grupo (de la lista de la coordinación, o «Irregular» / «Otro») --}}
+            <div x-data="grupoAlumno(@js((string) old('grupo', '')), @js((string) old('cuatrimestre', '')), @js($tutorPorGrupo))">
+            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_10rem]">
                 {{-- Carrera --}}
                 <div>
                     <label for="carrera" class="text-sm font-semibold">Carrera / Programa <span class="text-red-600">*</span></label>
@@ -91,16 +91,17 @@
                     <x-input-error :messages="$errors->get('cuatrimestre')" class="mt-1.5" />
                 </div>
 
-                {{-- Grupo: solo el número --}}
+                {{-- Grupo: lista con la nomenclatura de la coordinación --}}
                 <div>
-                    <label for="grupo" class="text-sm font-semibold">Grupo <span class="text-red-600" x-show="!delTutor">*</span></label>
+                    <label for="grupo" class="text-sm font-semibold">Grupo <span class="text-red-600">*</span></label>
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
-                        <input id="grupo" name="grupo" type="text" inputmode="numeric" autocomplete="off" maxlength="2"
-                               pattern="0?[1-9]|[1-9][0-9]" title="Escribe solo el número de tu grupo, por ejemplo 1."
-                               value="{{ old('grupo') }}" x-model="grupo" required
-                               :required="!delTutor" :disabled="delTutor" :placeholder="!delTutor ? 'Ej. 1' : 'Tutor'"
-                               placeholder="Ej. 1" class="{{ $input }} disabled:bg-slate-50 disabled:text-slate-400">
+                        <select id="grupo" name="grupo" required :required="grupoObligatorio" x-model="grupo" @change="proponerTutor()" class="{{ $input }} font-mono">
+                            <option value="" disabled @selected(! old('grupo'))>Grupo</option>
+                            @foreach ($grupos as $opcion)
+                                <option value="{{ $opcion }}" @selected(old('grupo') === $opcion)>{{ $opcion }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <x-input-error :messages="$errors->get('grupo')" class="mt-1.5" />
                 </div>

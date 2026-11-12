@@ -81,7 +81,7 @@ class EstilosYPerfilTest extends TestCase
                 'email' => $alumno->email,
                 'carrera' => $alumno->carrera,
                 'cuatrimestre' => $alumno->cuatrimestre,
-                'grupo' => '1',
+                'grupo' => 'STFW_09_01',
             ])
             ->assertOk()
             ->assertSee('Datos guardados.');

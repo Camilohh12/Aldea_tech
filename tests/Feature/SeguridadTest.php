@@ -109,7 +109,7 @@ class SeguridadTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => '9',
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Segura1',
             'password_confirmation' => 'Segura1',

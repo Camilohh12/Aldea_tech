@@ -26,6 +26,8 @@ class RegisteredUserController extends Controller
         // Tutores para que el alumno elija al suyo (agrupados por carrera en la vista,
         // primero los que tienen grupo y en orden de grupo)
         return view('auth.register', [
+            'grupos' => Grupo::opciones(),
+            'tutorPorGrupo' => Grupo::tutorPorGrupo(),
             'tutores' => $this->tutores()
                 ->orderByRaw('grupos_tutoria IS NULL')
                 ->orderBy('grupos_tutoria')
@@ -84,9 +86,9 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'carrera' => $request->carrera,
             'cuatrimestre' => (string) $request->cuatrimestre,
-            // El alumno escribe solo el número; se guarda el código completo (sftw_01_09)
-            'grupo' => Grupo::codigo($request->carrera, (string) $request->cuatrimestre, $request->grupo),
-            'estatus' => ReglasAlumno::estatus((string) $request->cuatrimestre),
+            // Código de la lista (TIID_01_02) o «Irregular» / «Otro»
+            'grupo' => $request->grupo ?: null,
+            'estatus' => ReglasAlumno::estatus((string) $request->cuatrimestre, $request->grupo),
             'tutor_id' => $request->tutor_id ?: null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
