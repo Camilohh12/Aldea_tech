@@ -67,10 +67,6 @@
                     {{ $students->count() }}
                 </span>
             </div>
-            <a href="{{ route('admin.tutors.students', $tutor) }}"
-               class="px-3 py-1.5 rounded-lg bg-upp-surface-high text-sm text-upp-primary-container font-medium hover:bg-upp-secondary-container transition">
-                Asignar alumnos
-            </a>
         </div>
 
         @forelse ($students as $student)
@@ -96,8 +92,7 @@
             </div>
         @empty
             <p class="px-6 py-6 text-sm text-gray-500">
-                Todavía no tiene alumnos. Los alumnos lo eligen al registrarse, o puedes
-                <a href="{{ route('admin.tutors.students', $tutor) }}" class="text-upp-primary-container font-medium hover:underline">asignárselos aquí</a>.
+                Todavía no tiene alumnos. Quedan en su lista automáticamente cuando se registran con uno de sus grupos.
             </p>
         @endforelse
 

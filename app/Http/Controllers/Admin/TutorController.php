@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Concerns\LeeFiltros;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -71,9 +72,13 @@ class TutorController extends Controller
         $user->markEmailAsVerified();
         $user->assignRole(self::ROLE);
 
+        // Los alumnos ya registrados en sus grupos pasan a su lista
+        $asignados = Grupo::asignarAlumnos($user);
+
         return redirect()
-            ->route('admin.tutors.students', $user)
-            ->with('success', "Tutor registrado. Ahora asígnale sus alumnos y comparte con {$user->name} su correo y la contraseña temporal.");
+            ->route('admin.tutors.index')
+            ->with('success', "Tutor registrado. Comparte con {$user->name} su correo y la contraseña temporal."
+                . ($asignados ? " Alumnos de sus grupos asignados: {$asignados}." : ''));
     }
 
     // Mostrar formulario para editar, con los alumnos que tiene asignados
@@ -109,9 +114,13 @@ class TutorController extends Controller
 
         $tutor->update($data);
 
+        // Si cambió de grupos, los alumnos de esos grupos pasan a su lista
+        $asignados = Grupo::asignarAlumnos($tutor);
+
         return redirect()
             ->route('admin.tutors.index')
-            ->with('success', 'Tutor actualizado correctamente.');
+            ->with('success', 'Tutor actualizado correctamente.'
+                . ($asignados ? " Alumnos de sus grupos asignados: {$asignados}." : ''));
     }
 
     // Eliminar tutor: sus alumnos quedan sin tutor para reasignarlos
@@ -141,58 +150,6 @@ class TutorController extends Controller
         return redirect()
             ->route('admin.tutors.index')
             ->with('success', "Tutor eliminado correctamente.{$note}");
-    }
-
-    // Buscar alumnos para asignarlos al tutor (por nombre, carrera y cuatrimestre)
-    public function students(Request $request, User $tutor)
-    {
-        $this->ensureIsTutor($tutor);
-
-        $filters = $this->studentFilters($request);
-
-        $students = $this->studentsQuery($tutor, $filters)
-            ->with('tutor')
-            ->orderBy('name')
-            ->paginate(25)
-            ->withQueryString();
-
-        return view('admin.tutors.students', [
-            'tutor' => $tutor,
-            'students' => $students,
-            'filters' => $filters,
-            'assignedCount' => $tutor->tutorados()->role('alumno')->count(),
-        ]);
-    }
-
-    // Asignar al tutor los alumnos marcados o todos los que coinciden con el filtro
-    public function assign(Request $request, User $tutor)
-    {
-        $this->ensureIsTutor($tutor);
-
-        $request->validate([
-            'alumnos' => ['array'],
-            'alumnos.*' => ['integer'],
-        ]);
-
-        $filters = $this->studentFilters($request);
-
-        $ids = $request->boolean('todos')
-            ? $this->studentsQuery($tutor, $filters)->pluck('id')
-            : User::role('alumno')->whereIn('id', $request->input('alumnos', []))->pluck('id');
-
-        $back = redirect()->route('admin.tutors.students', [$tutor, ...array_filter($filters)]);
-
-        if ($ids->isEmpty()) {
-            return $back->with('error', 'Selecciona al menos un alumno para asignar.');
-        }
-
-        User::whereIn('id', $ids)->update(['tutor_id' => $tutor->id]);
-
-        $count = $ids->count();
-
-        return $back->with('success', $count === 1
-            ? "Se asignó 1 alumno a {$tutor->name}."
-            : "Se asignaron {$count} alumnos a {$tutor->name}.");
     }
 
     // Quitar un alumno al tutor (queda sin tutor)
@@ -227,37 +184,6 @@ class TutorController extends Controller
     private function ensureIsTutor(User $user): void
     {
         abort_unless($user->hasRole(self::ROLE), 404);
-    }
-
-    // Filtros de la búsqueda de alumnos; por defecto solo los que no tienen tutor
-    private function studentFilters(Request $request): array
-    {
-        $carrera = $request->input('carrera');
-        $cuatrimestre = $request->input('cuatrimestre');
-
-        return [
-            'q' => $this->filtroTexto($request, 'q'),
-            'carrera' => in_array($carrera, config('aldea.carreras'), true) ? $carrera : null,
-            'cuatrimestre' => in_array($cuatrimestre, config('aldea.cuatrimestres'), true) ? $cuatrimestre : null,
-            'mostrar' => $this->filtroOpcion($request, 'mostrar', ['todos', 'sin_tutor'], 'sin_tutor'),
-        ];
-    }
-
-    // Alumnos que todavía no son de este tutor y coinciden con los filtros
-    private function studentsQuery(User $tutor, array $filters)
-    {
-        return User::role('alumno')
-            ->where(fn ($query) => $query->whereNull('tutor_id')->orWhere('tutor_id', '!=', $tutor->id))
-            ->when($filters['mostrar'] === 'sin_tutor', fn ($query) => $query->whereNull('tutor_id'))
-            ->when($filters['carrera'], fn ($query, $carrera) => $query->where('carrera', $carrera))
-            ->when($filters['cuatrimestre'], fn ($query, $cuatrimestre) => $query->where('cuatrimestre', $cuatrimestre))
-            ->when($filters['q'] !== '', function ($query) use ($filters) {
-                $query->where(function ($query) use ($filters) {
-                    $query->where('name', 'like', "%{$filters['q']}%")
-                        ->orWhere('matricula', 'like', "%{$filters['q']}%")
-                        ->orWhere('email', 'like', "%{$filters['q']}%");
-                });
-            });
     }
 
     // Reglas de validación (al editar, la contraseña es opcional)

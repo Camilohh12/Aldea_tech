@@ -185,18 +185,4 @@ class DatosAlumnoTest extends TestCase
             'email' => 'coordinacion@gmail.com',
         ])->assertSessionHasNoErrors();
     }
-
-    public function test_el_filtro_de_alumnos_del_tutor_acepta_otro(): void
-    {
-        $admin = User::factory()->create()->assignRole('admin');
-        $tutor = User::factory()->create()->assignRole('tutor');
-        $this->alumno(['name' => 'Ana Torres', 'cuatrimestre' => 'Otro']);
-        $this->alumno(['name' => 'Beto Ruiz', 'email' => 'beto@upp.edu.mx', 'matricula' => '2023000002', 'cuatrimestre' => '3']);
-
-        $this->actingAs($admin)
-            ->get(route('admin.tutors.students', ['tutor' => $tutor, 'cuatrimestre' => 'Otro']))
-            ->assertOk()
-            ->assertSee('Ana Torres')
-            ->assertDontSee('Beto Ruiz');
-    }
 }

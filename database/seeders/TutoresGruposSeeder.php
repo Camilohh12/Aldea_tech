@@ -62,6 +62,7 @@ class TutoresGruposSeeder extends Seeder
 
             if ($tutor) {
                 $tutor->update($datos);
+                \App\Support\Grupo::asignarAlumnos($tutor);
 
                 continue;
             }
@@ -72,6 +73,7 @@ class TutoresGruposSeeder extends Seeder
                 'password' => Str::password(32), // nadie la conoce: sin acceso hasta que el admin ponga una
             ]);
             $tutor->assignRole('tutor');
+            \App\Support\Grupo::asignarAlumnos($tutor);
             $creados++;
         }
 

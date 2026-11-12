@@ -33,6 +33,12 @@ class ProfileController extends Controller
             $request->user()->email_verified_at = null;
         }
 
+        // Al cambiar de grupo pasa a la lista del tutor de ese grupo
+        if ($request->esAlumno() && $request->user()->isDirty('grupo')
+            && ($tutor = \App\Support\Grupo::tutorDe($request->user()->grupo))) {
+            $request->user()->tutor_id = $tutor;
+        }
+
         // Al cambiar el cuatrimestre o el grupo se actualiza si el alumno es regular o irregular
         if ($request->esAlumno() && $request->user()->isDirty(['cuatrimestre', 'grupo'])) {
             $request->user()->estatus = ReglasAlumno::estatus($request->user()->cuatrimestre, $request->user()->grupo);

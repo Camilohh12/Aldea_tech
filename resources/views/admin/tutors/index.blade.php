@@ -82,7 +82,7 @@
                 </span>
             </div>
             <p class="font-heading text-4xl font-bold text-upp-primary mt-2">{{ $withoutTutor }}</p>
-            <p class="text-sm text-upp-secondary mt-1">Pendientes de asignar</p>
+            <p class="text-sm text-upp-secondary mt-1">Sin grupo con tutor</p>
         </div>
 
     </div>
@@ -200,11 +200,6 @@
 
                             <td class="px-4 lg:px-6 py-4">
                                 <div class="flex justify-end items-center gap-2">
-
-                                    <a href="{{ route('admin.tutors.students', $tutor) }}"
-                                       class="px-3 py-1.5 rounded-lg bg-upp-surface-high text-upp-primary-container font-medium hover:bg-upp-secondary-container transition whitespace-nowrap">
-                                        Asignar alumnos
-                                    </a>
 
                                     <a href="{{ route('admin.tutors.edit', $tutor) }}"
                                        class="px-3 py-1.5 rounded-lg border border-upp-surface-high text-upp-primary-container font-medium hover:bg-upp-surface-low transition">

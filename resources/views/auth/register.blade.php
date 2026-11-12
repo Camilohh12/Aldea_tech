@@ -59,7 +59,7 @@
             </div>
 
             {{-- Carrera, cuatrimestre y grupo (de la lista de la coordinación, o «Irregular» / «Otro») --}}
-            <div x-data="grupoAlumno(@js((string) old('grupo', '')), @js((string) old('cuatrimestre', '')), @js($tutorPorGrupo))">
+            <div class="space-y-5" x-data="grupoAlumno(@js((string) old('grupo', '')), @js((string) old('cuatrimestre', '')), @js($tutorPorGrupo))">
             <div class="grid gap-5 sm:grid-cols-[1fr_8rem_12rem]">
                 {{-- Carrera --}}
                 <div>
@@ -96,7 +96,7 @@
                     <label for="grupo" class="text-sm font-semibold">Grupo <span class="text-red-600">*</span></label>
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
-                        <select id="grupo" name="grupo" required :required="grupoObligatorio" x-model="grupo" @change="proponerTutor()" class="{{ $input }} font-mono">
+                        <select id="grupo" name="grupo" required :required="grupoObligatorio" x-model="grupo" class="{{ $input }} font-mono">
                             <option value="" disabled @selected(! old('grupo'))>Grupo</option>
                             @foreach ($grupos as $opcion)
                                 <option value="{{ $opcion }}" @selected(old('grupo') === $opcion)>{{ $opcion }}</option>
@@ -107,15 +107,20 @@
                 </div>
             </div>
             @include('auth.partials.ayuda-grupo')
+
+            {{-- Tutor académico: sale solo del grupo. Solo lo elige quien no tiene
+                 grupo con tutor («Irregular», «Otro» o un grupo que nadie atiende). --}}
+            <div x-show="tutorDelGrupo" x-cloak class="rounded-xl border border-aldea-200 bg-aldea-50 px-4 py-3 text-sm">
+                <p class="font-semibold text-aldea-900">Tu tutor: <span x-text="tutorDelGrupo?.nombre"></span></p>
+                <p class="mt-0.5 text-xs text-slate-600">Quedas en su lista automáticamente por ser de <span class="font-mono" x-text="grupo"></span>.</p>
             </div>
 
-            {{-- Tutor académico (aparece cuando la coordinación ya registró tutores) --}}
             @if ($tutores->isNotEmpty())
-                <div>
+                <div x-show="!tutorDelGrupo">
                     <label for="tutor_id" class="text-sm font-semibold">Tutor académico <span class="text-red-600">*</span></label>
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
-                        <select id="tutor_id" name="tutor_id" required class="{{ $input }}">
+                        <select id="tutor_id" name="tutor_id" required :required="!tutorDelGrupo" :disabled="Boolean(tutorDelGrupo)" class="{{ $input }}">
                             <option value="" disabled @selected(! old('tutor_id'))>Selecciona a tu tutor…</option>
                             @foreach ($tutores->groupBy(fn ($tutor) => $tutor->carrera ?: 'Otros tutores')->sortKeys() as $grupo => $lista)
                                 <optgroup label="{{ $grupo }}">
@@ -130,6 +135,7 @@
                     <x-input-error :messages="$errors->get('tutor_id')" class="mt-1.5" />
                 </div>
             @endif
+            </div>
 
             {{-- Correo --}}
             <div>

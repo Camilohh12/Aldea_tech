@@ -27,7 +27,9 @@ class RegisteredUserController extends Controller
         // primero los que tienen grupo y en orden de grupo)
         return view('auth.register', [
             'grupos' => Grupo::opciones(),
-            'tutorPorGrupo' => Grupo::tutorPorGrupo(),
+            'tutorPorGrupo' => $this->tutores()->whereNotNull('grupos_tutoria')->get(['id', 'name', 'grupos_tutoria'])
+                ->flatMap(fn (User $tutor) => collect(explode(', ', $tutor->grupos_tutoria))
+                    ->mapWithKeys(fn (string $codigo) => [$codigo => ['id' => $tutor->id, 'nombre' => $tutor->name]])),
             'tutores' => $this->tutores()
                 ->orderByRaw('grupos_tutoria IS NULL')
                 ->orderBy('grupos_tutoria')
@@ -54,8 +56,10 @@ class RegisteredUserController extends Controller
             $request->merge(['email' => Str::lower($request->input('email'))]);
         }
 
-        // El tutor es obligatorio en cuanto la coordinación haya registrado tutores
-        $hayTutores = $this->tutores()->exists();
+        // El alumno queda solo en la lista del tutor de su grupo. Solo elige tutor
+        // quien no tiene grupo con tutor («Irregular», «Otro» o un grupo sin tutor).
+        $tutorDelGrupo = is_string($request->input('grupo')) ? Grupo::tutorDe($request->input('grupo')) : null;
+        $eligeTutor = ! $tutorDelGrupo && $this->tutores()->exists();
 
         $request->validate([
             'matricula' => [...ReglasAlumno::matricula(), 'unique:'.User::class],
@@ -63,7 +67,7 @@ class RegisteredUserController extends Controller
             'carrera' => ReglasAlumno::carrera(),
             'cuatrimestre' => ReglasAlumno::cuatrimestre(),
             'grupo' => ReglasAlumno::grupo($request->input('cuatrimestre')),
-            'tutor_id' => ['bail', $hayTutores ? 'required' : 'nullable', 'integer', function ($attribute, $value, $fail) {
+            'tutor_id' => $tutorDelGrupo ? ['exclude'] : ['bail', $eligeTutor ? 'required' : 'nullable', 'integer', function ($attribute, $value, $fail) {
                 if (! $this->tutores()->whereKey($value)->exists()) {
                     $fail('Selecciona a tu tutor de la lista.');
                 }
@@ -89,7 +93,7 @@ class RegisteredUserController extends Controller
             // Código de la lista (TIID_01_02) o «Irregular» / «Otro»
             'grupo' => $request->grupo ?: null,
             'estatus' => ReglasAlumno::estatus((string) $request->cuatrimestre, $request->grupo),
-            'tutor_id' => $request->tutor_id ?: null,
+            'tutor_id' => $tutorDelGrupo ?? ($request->tutor_id ?: null),
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

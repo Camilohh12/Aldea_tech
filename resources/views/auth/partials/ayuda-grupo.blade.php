@@ -5,6 +5,3 @@
 <p class="mt-2 text-xs text-slate-600" x-show="delTutor" x-cloak>
     Con «<span x-text="grupo || cuatrimestre"></span>» cuentas en el grupo de tu tutor.
 </p>
-<p class="mt-1 text-xs text-slate-600" x-show="tutorPropuesto" x-cloak>
-    Seleccionamos al tutor de ese grupo; cámbialo si no es el tuyo.
-</p>

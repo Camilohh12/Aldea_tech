@@ -77,6 +77,30 @@ final class Grupo
             ->all();
     }
 
+    /** Tutor que atiende un grupo (null si es «Irregular», «Otro» o nadie lo atiende). */
+    public static function tutorDe(?string $grupo): ?int
+    {
+        return self::esCodigo($grupo) ? (self::tutorPorGrupo()[strtoupper($grupo)] ?? null) : null;
+    }
+
+    /**
+     * Pone en la lista del tutor a los alumnos de sus grupos (los que se
+     * registraron antes de que el tutor tuviera ese grupo). Devuelve cuántos.
+     */
+    public static function asignarAlumnos(User $tutor): int
+    {
+        $grupos = collect(preg_split('/\s*,\s*/', (string) $tutor->grupos_tutoria))->filter()->values();
+
+        if ($grupos->isEmpty()) {
+            return 0;
+        }
+
+        return User::whereHas('roles', fn ($query) => $query->where('name', 'alumno'))
+            ->whereIn('grupo', $grupos)
+            ->where(fn ($query) => $query->whereNull('tutor_id')->orWhere('tutor_id', '!=', $tutor->id))
+            ->update(['tutor_id' => $tutor->id]);
+    }
+
     /** «Irregular» u «Otro» en el grupo (o, en cuentas anteriores, en el cuatrimestre). */
     public static function usaElDelTutor(?string $grupo, ?string $cuatrimestre = null): bool
     {
