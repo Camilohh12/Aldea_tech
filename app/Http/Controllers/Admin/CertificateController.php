@@ -189,11 +189,10 @@ class CertificateController extends Controller
     private function pdf(Activity $activity, Speaker $speaker, string $folio, $issuedAt)
     {
         $template = CertificateTemplate::current();
-        $escudo = public_path('img/escudo-upp.png');
 
-        // DomPDF necesita la extensión GD de PHP para las imágenes;
-        // sin ella, el certificado se genera sin el escudo en lugar de fallar
-        $withShield = extension_loaded('gd') && is_file($escudo);
+        // Fondo del formato oficial (marco, escudo, franja de Hidalgo). Es JPG,
+        // así que DomPDF no necesita la extensión GD para ponerlo.
+        $fondo = public_path('img/certificado/fondo-reconocimiento.jpg');
 
         return Pdf::loadView('pdf.certificate', [
             'template' => $template,
@@ -201,10 +200,19 @@ class CertificateController extends Controller
             'bodyHtml' => $template->renderBody($template->valuesFor($activity, $speaker)),
             'folio' => $folio,
             'issuedAt' => $issuedAt,
-            'escudo' => $withShield ? 'data:image/png;base64,' . base64_encode(file_get_contents($escudo)) : null,
+            'fondo' => is_file($fondo) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($fondo)) : null,
+            'fonts' => $this->fontsUrl(),
         ])
             ->setPaper('letter', 'landscape')
             ->setOption('isFontSubsettingEnabled', true); // PDF más ligero
+    }
+
+    // Carpeta de la letra Inter como URL file:// (funciona en Windows y en Linux)
+    private function fontsUrl(): string
+    {
+        $path = str_replace('\\', '/', resource_path('fonts/inter'));
+
+        return 'file://' . (str_starts_with($path, '/') ? '' : '/') . $path;
     }
 
     // Datos para la vista previa: un ponente real o, si no hay, un ejemplo
@@ -230,7 +238,7 @@ class CertificateController extends Controller
         $activity->setRelation('room', (new Room)->forceFill(['name' => 'Laboratorio de Redes']));
 
         $speaker = (new Speaker)->forceFill([
-            'name' => 'Dra. Mónica P. Soto',
+            'name' => 'Dra. Mónica Patricia Soto Ramírez',
             'bio' => 'Investigadora en ciberseguridad',
         ]);
 

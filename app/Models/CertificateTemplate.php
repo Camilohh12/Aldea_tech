@@ -20,26 +20,40 @@ class CertificateTemplate extends Model
         'footer',
     ];
 
-    // Textos originales del certificado
+    // Textos del formato oficial de reconocimientos UPP 2026
     public const DEFAULTS = [
         'institution' => 'UNIVERSIDAD POLITÉCNICA DE PACHUCA',
         'event_name' => 'Aldea Tecnológica 2026',
+        'heading' => 'La Universidad Politécnica de Pachuca otorga el presente',
+        'title' => 'RECONOCIMIENTO',
+        'body' => 'Por su participación como ponente en “{actividad}”, {tipo} de la {evento}, realizada en esta Casa de Estudios, el día {dia}, Zempoala, Hidalgo.',
+        'signer1_name' => 'Mtro. Francisco Hernández Jiménez',
+        'signer1_title' => 'Rector',
+        'signer2_name' => null,
+        'signer2_title' => null,
+        'footer' => null,
+    ];
+
+    // Textos de la primera versión (la migración los cambia por los oficiales si nadie los editó)
+    public const DEFAULTS_ANTERIORES = [
         'heading' => 'OTORGA LA PRESENTE',
         'title' => 'CONSTANCIA',
         'body' => 'Por su valiosa participación como ponente en la actividad «{actividad}» ({tipo}), realizada el {fecha} de {horario} h en {aula}, en el marco de {evento}.',
         'signer1_name' => 'Coordinación de Aldea Tecnológica',
         'signer1_title' => 'Universidad Politécnica de Pachuca',
-        'signer2_name' => null,
-        'signer2_title' => null,
         'footer' => 'Pachuca de Soto, Hidalgo',
     ];
+
+    // Datos que van en negritas dentro del texto (como en el formato oficial)
+    public const EN_NEGRITAS = ['actividad', 'ponente'];
 
     // Datos que se llenan solos en el texto del certificado
     public const VARIABLES = [
         'ponente' => 'Nombre del ponente',
         'actividad' => 'Título de la actividad',
         'tipo' => 'Tipo (taller, curso…)',
-        'fecha' => 'Fecha de la actividad',
+        'fecha' => 'Fecha con día (martes 24 de noviembre de 2026)',
+        'dia' => 'Fecha (24 de noviembre de 2026)',
         'horario' => 'Horario (10:00 a 12:00)',
         'aula' => 'Aula',
         'horas' => 'Horas acreditadas',
@@ -62,6 +76,9 @@ class CertificateTemplate extends Model
             'fecha' => $activity->date
                 ? $activity->date->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY')
                 : 'fecha por definir',
+            'dia' => $activity->date
+                ? $activity->date->locale('es')->isoFormat('D [de] MMMM [de] YYYY')
+                : 'fecha por definir',
             'horario' => $activity->start_time && $activity->end_time
                 ? substr($activity->start_time, 0, 5) . ' a ' . substr($activity->end_time, 0, 5)
                 : 'horario por definir',
@@ -71,13 +88,15 @@ class CertificateTemplate extends Model
         ];
     }
 
-    // Texto del certificado en HTML seguro: escapa todo y pone en negritas los datos
+    // Texto del certificado en HTML seguro: escapa todo y pone en negritas
+    // solo el título de la actividad y el nombre (como en el formato oficial)
     public function renderBody(array $values): string
     {
         $html = e($this->body);
 
         foreach ($values as $key => $value) {
-            $html = str_replace('{' . $key . '}', '<strong>' . e($value) . '</strong>', $html);
+            $texto = e($value);
+            $html = str_replace('{' . $key . '}', in_array($key, self::EN_NEGRITAS, true) ? "<strong>{$texto}</strong>" : $texto, $html);
         }
 
         return $html;
