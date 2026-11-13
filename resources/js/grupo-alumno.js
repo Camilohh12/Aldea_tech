@@ -1,29 +1,25 @@
 import Alpine from 'alpinejs';
 
-// Campo «Grupo» del registro y de «Mi perfil». El alumno escribe solo el número
-// y aquí se muestra el código que se guardará: prefijo_grupo_cuatrimestre
-// (sftw_01_09). El servidor lo arma igual en App\Support\Grupo::codigo().
-Alpine.data('grupoAlumno', (carrera, cuatrimestre, grupo, prefijos) => ({
-    carrera,
-    cuatrimestre,
+// Campo «Grupo» del registro y de «Mi perfil»: el alumno elige su grupo de la
+// lista de la coordinación (TIID_01_02…) o «Irregular» / «Otro». En el registro,
+// el tutor sale solo del grupo (tutorPorGrupo: {código: {id, nombre}}).
+Alpine.data('grupoAlumno', (grupo, cuatrimestre, tutorPorGrupo) => ({
     grupo,
+    cuatrimestre,
 
-    // «Irregular» y «Otro» no capturan grupo: el alumno queda en el de su tutor.
-    // Mientras no elige cuatrimestre el campo sigue activo.
-    get delTutor() {
-        return this.cuatrimestre !== '' && !/^[0-9]+$/.test(this.cuatrimestre);
+    // Tutor que atiende el grupo elegido; null si hay que elegirlo a mano
+    get tutorDelGrupo() {
+        return tutorPorGrupo[this.grupo] ?? null;
     },
 
-    get codigo() {
-        const prefijo = prefijos[this.carrera];
-        const numero = String(this.grupo ?? '').trim();
+    // «Irregular» y «Otro» (en el grupo o en el cuatrimestre) cuentan en el grupo de su tutor
+    get delTutor() {
+        return ['Irregular', 'Otro'].includes(this.grupo)
+            || (this.grupo === '' && this.cuatrimestre !== '' && !/^[0-9]+$/.test(this.cuatrimestre));
+    },
 
-        if (!prefijo || !/^[0-9]+$/.test(this.cuatrimestre) || !/^(0?[1-9]|[1-9][0-9])$/.test(numero)) {
-            return '';
-        }
-
-        const dosDigitos = (valor) => String(parseInt(valor, 10)).padStart(2, '0');
-
-        return `${prefijo}_${dosDigitos(numero)}_${dosDigitos(this.cuatrimestre)}`;
+    // Con cuatrimestre «Irregular» u «Otro» el grupo puede quedar vacío
+    get grupoObligatorio() {
+        return this.cuatrimestre === '' || /^[0-9]+$/.test(this.cuatrimestre);
     },
 }));

@@ -33,7 +33,7 @@ class ValidacionRegistroTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => '9',
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Segura1',
             'password_confirmation' => 'Segura1',
@@ -91,7 +91,7 @@ class ValidacionRegistroTest extends TestCase
         $this->actingAs($alumno)->get(route('profile.edit'))->assertSee('maxlength="50"', false);
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => str_repeat('a', 51), 'email' => $alumno->email,
-            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => '1',
+            'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'STFW_09_01',
         ])->assertSessionHasErrors(['name' => 'El nombre puede tener máximo 50 caracteres.']);
     }
 
@@ -102,7 +102,7 @@ class ValidacionRegistroTest extends TestCase
         $alumno = User::factory()->create([
             'email' => 'ana@upp.edu.mx', 'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'sftw_01_07',
         ])->assignRole('alumno');
-        $datos = ['name' => 'Ana Torres', 'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => '1'];
+        $datos = ['name' => 'Ana Torres', 'carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7', 'grupo' => 'STFW_09_01'];
 
         // Su correo anterior se respeta mientras no lo cambie
         $this->actingAs($alumno)->patch(route('profile.update'), $datos + ['email' => 'ana@upp.edu.mx'])->assertSessionHasNoErrors();

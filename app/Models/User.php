@@ -19,6 +19,9 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    /** Dominio de los correos provisionales de tutores dados de alta sin correo real. */
+    public const DOMINIO_CORREO_PENDIENTE = 'correo-pendiente.local';
+
     protected $fillable = [
         'name',
         'email',
@@ -27,6 +30,7 @@ class User extends Authenticatable
         'carrera',
         'cuatrimestre',
         'grupo',
+        'grupos_tutoria',
         'estatus',
         'tutor_id',
     ];
@@ -78,5 +82,17 @@ class User extends Authenticatable
     public function tutorados(): HasMany
     {
         return $this->hasMany(User::class, 'tutor_id');
+    }
+
+    /** Tutor con sus grupos al principio: «TIID_01_02, TIID_04_01 · Mayra Fabiola González». */
+    public function etiquetaTutor(): string
+    {
+        return $this->grupos_tutoria ? "{$this->grupos_tutoria} · {$this->name}" : $this->name;
+    }
+
+    /** Tutor dado de alta sin correo real todavía (no puede iniciar sesión). */
+    public function correoPendiente(): bool
+    {
+        return str_ends_with((string) $this->email, '@' . self::DOMINIO_CORREO_PENDIENTE);
     }
 }

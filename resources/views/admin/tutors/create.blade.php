@@ -57,7 +57,7 @@
     </div>
 
     <p class="text-xs text-gray-500 mt-4">
-        La cuenta recibe el rol <strong>tutor</strong>. Al guardarla pasarás a la pantalla para asignarle sus alumnos.
+        La cuenta recibe el rol <strong>tutor</strong>. Los alumnos de sus grupos quedan en su lista automáticamente al registrarse.
     </p>
 
 </div>

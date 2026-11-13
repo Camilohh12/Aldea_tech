@@ -57,20 +57,21 @@ class ReglasAlumno
     }
 
     /**
-     * Número de grupo (el sistema arma el código con la carrera y el cuatrimestre).
-     * Con cuatrimestre «Irregular» u «Otro» no se pide: el alumno queda en el grupo de su tutor.
+     * Grupo de la lista (TIID_01_02…) o «Irregular» / «Otro». Si el cuatrimestre
+     * ya es «Irregular» u «Otro» puede quedar vacío: cuenta en el grupo de su tutor.
      */
-    public static function grupo(mixed $cuatrimestre): array
+    public static function grupo(mixed $cuatrimestre = null): array
     {
-        return Grupo::llevaGrupo(is_scalar($cuatrimestre) ? (string) $cuatrimestre : null)
-            ? ['required', 'regex:/^(0?[1-9]|[1-9][0-9])$/'] // 1 a 99; acepta «1» y «01»
-            : ['exclude'];
+        $cuatrimestre = is_scalar($cuatrimestre) ? (string) $cuatrimestre : '';
+        $opcional = $cuatrimestre !== '' && ! ctype_digit($cuatrimestre);
+
+        return [$opcional ? 'nullable' : 'required', 'string', Rule::in(Grupo::opciones())];
     }
 
-    /** "Irregular" marca al alumno como irregular; cualquier otra opción, como regular. */
-    public static function estatus(?string $cuatrimestre): string
+    /** «Irregular» en el cuatrimestre o en el grupo marca al alumno como irregular. */
+    public static function estatus(?string $cuatrimestre, ?string $grupo = null): string
     {
-        return $cuatrimestre === 'Irregular' ? 'irregular' : 'regular';
+        return $cuatrimestre === 'Irregular' || $grupo === Grupo::IRREGULAR ? 'irregular' : 'regular';
     }
 
     public static function mensajes(): array
@@ -85,8 +86,8 @@ class ReglasAlumno
             'carrera.in' => 'Selecciona una carrera de la lista.',
             'cuatrimestre.required' => 'Selecciona tu cuatrimestre.',
             'cuatrimestre.in' => 'Selecciona un cuatrimestre de la lista.',
-            'grupo.required' => 'Escribe el número de tu grupo, por ejemplo 1.',
-            'grupo.regex' => 'Escribe solo el número de tu grupo (del 1 al 99), por ejemplo 1.',
+            'grupo.required' => 'Selecciona tu grupo.',
+            'grupo.in' => 'Selecciona tu grupo de la lista.',
             'name.max' => 'El nombre puede tener máximo '.self::NOMBRE_MAX.' caracteres.',
             'email.regex' => 'Usa tu correo institucional (@'.config('aldea.dominio_correo').').',
             ...self::mensajesContrasena(),

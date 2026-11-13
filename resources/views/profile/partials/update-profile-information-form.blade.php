@@ -34,9 +34,9 @@
 
         {{-- Datos académicos: solo los alumnos, con las mismas opciones del registro --}}
         @if ($esAlumno)
-            @php $numeroGrupo = old('grupo', \App\Support\Grupo::numero($user->grupo)); @endphp
-            <div x-data="grupoAlumno(@js(old('carrera', $user->carrera ?? '')), @js((string) old('cuatrimestre', $user->cuatrimestre ?? '')), @js((string) $numeroGrupo), @js(config('aldea.prefijos_grupo')))">
-            <div class="grid gap-5 sm:grid-cols-[1fr_9rem_7rem]">
+            @php $grupoActual = (string) old('grupo', $user->grupo); @endphp
+            <div x-data="grupoAlumno(@js($grupoActual), @js((string) old('cuatrimestre', $user->cuatrimestre ?? '')), {})">
+            <div class="grid gap-5 sm:grid-cols-[1fr_8rem_12rem]">
                 <div>
                     <label for="carrera" class="text-sm font-semibold">Carrera / Programa</label>
                     <div class="relative mt-1.5">
@@ -69,11 +69,12 @@
                     <label for="grupo" class="text-sm font-semibold">Grupo</label>
                     <div class="relative mt-1.5">
                         <x-icono name="persona" :class="$icono" />
-                        <input id="grupo" name="grupo" type="text" inputmode="numeric" autocomplete="off" maxlength="2"
-                               pattern="0?[1-9]|[1-9][0-9]" title="Escribe solo el número de tu grupo, por ejemplo 1."
-                               value="{{ $numeroGrupo }}" x-model="grupo" required
-                               :required="!delTutor" :disabled="delTutor" :placeholder="!delTutor ? 'Ej. 1' : 'Tutor'"
-                               placeholder="Ej. 1" class="{{ $input }} disabled:bg-slate-50 disabled:text-slate-400">
+                        <select id="grupo" name="grupo" required :required="grupoObligatorio" x-model="grupo" class="{{ $input }} font-mono">
+                            <option value="" disabled @selected($grupoActual === '')>Grupo</option>
+                            @foreach (\App\Support\Grupo::opciones() as $opcion)
+                                <option value="{{ $opcion }}" @selected($grupoActual === $opcion)>{{ $opcion }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <x-input-error class="mt-1.5" :messages="$errors->get('grupo')" />
                 </div>

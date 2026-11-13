@@ -27,7 +27,6 @@ return [
     // Programas que aparecen en el registro.
     'carreras' => [
         'Ingeniería en Tecnologías de la Información e Innovación Digital',
-        'Ingeniería en Redes y Telecomunicaciones',
         'Ingeniería en Software',
     ],
 
@@ -38,13 +37,19 @@ return [
     // "Irregular" marca al alumno como irregular; "Otro" es para cuando ninguna opción aplica.
     'cuatrimestres' => [...array_map('strval', range(1, 10)), 'Irregular', 'Otro'],
 
-    // Grupos: el alumno escribe solo el número de su grupo y el sistema arma el
-    // código prefijo_grupo_cuatrimestre, p. ej. sftw_01_09 = Software, grupo 1, 9°.
-    // Los alumnos «Irregular» u «Otro» no capturan grupo: quedan en el de su tutor.
+    // Grupos con la nomenclatura de la coordinación: PREFIJO_CUATRIMESTRE_GRUPO,
+    // p. ej. TIID_01_02 = TIID, 1er cuatrimestre, grupo 2. El alumno elige su
+    // grupo de una lista (estos más los que el admin asigne a los tutores) o
+    // «Irregular» / «Otro»; con esas dos opciones cuenta en el grupo de su tutor.
     'prefijos_grupo' => [
-        'Ingeniería en Tecnologías de la Información e Innovación Digital' => 'tiid',
-        'Ingeniería en Redes y Telecomunicaciones' => 'redte', // provisional, falta confirmar
-        'Ingeniería en Software' => 'sftw',
+        'Ingeniería en Tecnologías de la Información e Innovación Digital' => 'TIID',
+        'Ingeniería en Software' => 'STFW',
+    ],
+
+    // Archivo GRUPOS_TIID_Y_SFTW.xlsx de la coordinación
+    'grupos' => [
+        'TIID_01_01', 'TIID_01_02', 'TIID_01_03', 'TIID_03_01', 'TIID_04_01',
+        'TIID_04_02', 'TIID_06_01', 'TIID_07_01', 'TIID_07_02', 'STFW_09_01',
     ],
 
     // Color institucional para los PDF: la misma escala "aldea" (50 a 900) de las

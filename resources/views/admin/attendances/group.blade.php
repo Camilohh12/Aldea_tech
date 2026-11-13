@@ -173,11 +173,11 @@
                                         <p class="text-xs text-gray-500">{{ $alumno->email }}</p>
                                         @if ($fila->porTutor)
                                             <span class="inline-flex mt-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">
-                                                {{ $alumno->cuatrimestre }} · grupo de su tutor
+                                                {{ \App\Support\Grupo::esCodigo($alumno->grupo) || ! $alumno->grupo ? $alumno->cuatrimestre : $alumno->grupo }} · grupo de su tutor
                                             </span>
                                         @elseif ($sinGrupo)
                                             <span class="inline-flex mt-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">
-                                                {{ \App\Support\Grupo::usaElDelTutor($alumno->cuatrimestre) ? $alumno->cuatrimestre.' · su tutor no tiene grupo' : 'Falta capturar su grupo' }}
+                                                {{ \App\Support\Grupo::usaElDelTutor($alumno->grupo, $alumno->cuatrimestre) ? ($alumno->grupo ?: $alumno->cuatrimestre).' · su tutor no tiene grupo' : 'Falta capturar su grupo' }}
                                             </span>
                                         @endif
                                     </div>

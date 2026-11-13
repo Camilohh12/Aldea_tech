@@ -146,10 +146,6 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         // CRUD de Tutores (usuarios con rol "tutor") y asignación de sus alumnos
         Route::resource('tutors', TutorController::class)
             ->except(['show']);
-        Route::get('/tutors/{tutor}/alumnos', [TutorController::class, 'students'])
-            ->name('tutors.students');
-        Route::post('/tutors/{tutor}/alumnos', [TutorController::class, 'assign'])
-            ->name('tutors.students.assign');
         Route::delete('/tutors/{tutor}/alumnos/{alumno}', [TutorController::class, 'unassign'])
             ->whereNumber('alumno')->name('tutors.students.unassign');
 

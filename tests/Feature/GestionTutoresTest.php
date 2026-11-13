@@ -83,64 +83,6 @@ class GestionTutoresTest extends TestCase
         $this->get('/dashboard')->assertRedirect(route('tutor.tutorados'));
     }
 
-    public function test_asigna_los_alumnos_marcados(): void
-    {
-        $tutor = $this->tutor();
-        [$a, $b, $c] = [$this->alumno(), $this->alumno(), $this->alumno()];
-        $responsable = User::factory()->create()->assignRole('responsable');
-
-        $this->actingAs($this->admin)
-            ->post(route('admin.tutors.students.assign', $tutor), ['alumnos' => [$a->id, $b->id, $responsable->id]])
-            ->assertSessionHas('success', 'Se asignaron 2 alumnos a Mtra. Laura Gómez.');
-
-        $this->assertSame($tutor->id, $a->fresh()->tutor_id);
-        $this->assertSame($tutor->id, $b->fresh()->tutor_id);
-        $this->assertNull($c->fresh()->tutor_id);
-        $this->assertNull($responsable->fresh()->tutor_id, 'Solo se asignan cuentas de alumno');
-
-        $this->actingAs($this->admin)
-            ->post(route('admin.tutors.students.assign', $tutor), [])
-            ->assertSessionHas('error');
-    }
-
-    public function test_asigna_en_bloque_por_carrera_y_cuatrimestre(): void
-    {
-        $tutor = $this->tutor();
-        $otroTutor = $this->tutor('Ing. Pedro Ruiz');
-
-        $software7 = $this->alumno();
-        $software7b = $this->alumno();
-        $software3 = $this->alumno(['cuatrimestre' => '3']);
-        $redes7 = $this->alumno(['carrera' => 'Ingeniería en Redes y Telecomunicaciones']);
-        $conOtroTutor = $this->alumno(['tutor_id' => $otroTutor->id]);
-
-        $filtro = ['carrera' => 'Ingeniería en Software', 'cuatrimestre' => '7'];
-
-        // La pantalla de asignación muestra solo los que coinciden y no tienen tutor
-        $this->actingAs($this->admin)->get(route('admin.tutors.students', [$tutor, ...$filtro]))
-            ->assertOk()
-            ->assertSee($software7->name)
-            ->assertDontSee($software3->name)
-            ->assertDontSee($redes7->name)
-            ->assertDontSee($conOtroTutor->name);
-
-        $this->actingAs($this->admin)
-            ->post(route('admin.tutors.students.assign', $tutor), $filtro + ['todos' => '1'])
-            ->assertSessionHas('success', 'Se asignaron 2 alumnos a Mtra. Laura Gómez.');
-
-        $this->assertSame($tutor->id, $software7->fresh()->tutor_id);
-        $this->assertSame($tutor->id, $software7b->fresh()->tutor_id);
-        $this->assertNull($software3->fresh()->tutor_id);
-        $this->assertNull($redes7->fresh()->tutor_id);
-        $this->assertSame($otroTutor->id, $conOtroTutor->fresh()->tutor_id, 'Sin "mostrar todos" no se mueve a alumnos de otro tutor');
-
-        // Con "Todos los alumnos" sí se reasigna al que tenía otro tutor
-        $this->actingAs($this->admin)
-            ->post(route('admin.tutors.students.assign', $tutor), $filtro + ['mostrar' => 'todos', 'todos' => '1'])
-            ->assertSessionHas('success');
-        $this->assertSame($tutor->id, $conOtroTutor->fresh()->tutor_id);
-    }
-
     public function test_quita_un_alumno_de_su_tutor(): void
     {
         $tutor = $this->tutor();
@@ -187,7 +129,6 @@ class GestionTutoresTest extends TestCase
         $responsable = User::factory()->create()->assignRole('responsable');
 
         $this->actingAs($this->admin)->get(route('admin.tutors.edit', $responsable))->assertNotFound();
-        $this->actingAs($this->admin)->get(route('admin.tutors.students', $responsable))->assertNotFound();
         $this->actingAs($this->admin)->delete(route('admin.tutors.destroy', $responsable))->assertNotFound();
         $this->assertModelExists($responsable);
     }
@@ -230,7 +171,7 @@ class GestionTutoresTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => 7,
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Password123',
             'password_confirmation' => 'Password123',

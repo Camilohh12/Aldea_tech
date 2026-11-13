@@ -183,7 +183,7 @@ class TutoradosTest extends TestCase
     public function test_resumen_por_carrera_y_proximas_actividades(): void
     {
         $sw = $this->alumno(['carrera' => 'Ingeniería en Software']);
-        $redes = $this->alumno(['carrera' => 'Ingeniería en Redes y Telecomunicaciones']);
+        $redes = $this->alumno(['carrera' => 'Ingeniería en Tecnologías de la Información e Innovación Digital']);
         $this->inscribir($sw, $this->actividad(['duration_hours' => 4]), asistio: true);
 
         $foro = $this->actividad(['title' => 'Foro 2027', 'date' => '2026-11-26']);

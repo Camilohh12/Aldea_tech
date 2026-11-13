@@ -65,20 +65,6 @@ class FiltroEnVivoTest extends TestCase
         $this->assertFiltroVivo($this->actingAs($admin)->get($ruta), $partes, '');
     }
 
-    public function test_la_asignacion_de_alumnos_de_un_tutor(): void
-    {
-        $admin = User::factory()->create()->assignRole('admin');
-        $tutor = User::factory()->create()->assignRole('tutor');
-        User::factory()->create(['name' => 'Mariana Ruiz', 'matricula' => '2023000001'])->assignRole('alumno');
-
-        $respuesta = $this->actingAs($admin)->get(route('admin.tutors.students', $tutor).'?q=Mar');
-
-        $this->assertFiltroVivo($respuesta, ['limpiar', 'alumnos', 'paginacion'], 'Mar');
-        $respuesta->assertSee('Mariana Ruiz')
-            // Asignar «los N del filtro» usa la búsqueda vigente
-            ->assertSee('<input type="hidden" name="q" value="Mar">', false);
-    }
-
     public function test_el_detalle_de_asistencia(): void
     {
         $admin = User::factory()->create()->assignRole('admin');

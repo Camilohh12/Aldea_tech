@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Support\Grupo;
 use App\Support\ReglasAlumno;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,22 +27,21 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        // El grupo llega como número; abajo se guarda el código completo
-        $request->user()->fill($request->safe()->except('grupo'));
+        $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
-        // Al cambiar el cuatrimestre se actualiza si el alumno es regular o irregular
-        if ($request->esAlumno() && $request->user()->isDirty('cuatrimestre')) {
-            $request->user()->estatus = ReglasAlumno::estatus($request->user()->cuatrimestre);
+        // Al cambiar de grupo pasa a la lista del tutor de ese grupo
+        if ($request->esAlumno() && $request->user()->isDirty('grupo')
+            && ($tutor = \App\Support\Grupo::tutorDe($request->user()->grupo))) {
+            $request->user()->tutor_id = $tutor;
         }
 
-        // Código con la carrera y el cuatrimestre actuales (sin grupo si es «Irregular» u «Otro»)
-        if ($request->esAlumno()) {
-            $user = $request->user();
-            $user->grupo = Grupo::codigo($user->carrera, $user->cuatrimestre, $request->validated('grupo'));
+        // Al cambiar el cuatrimestre o el grupo se actualiza si el alumno es regular o irregular
+        if ($request->esAlumno() && $request->user()->isDirty(['cuatrimestre', 'grupo'])) {
+            $request->user()->estatus = ReglasAlumno::estatus($request->user()->cuatrimestre, $request->user()->grupo);
         }
 
         $request->user()->save();

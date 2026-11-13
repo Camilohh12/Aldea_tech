@@ -31,7 +31,7 @@ class DatosAlumnoTest extends TestCase
             'name' => 'Valeria Martínez Solís',
             'carrera' => 'Ingeniería en Software',
             'cuatrimestre' => '7',
-            'grupo' => '1',
+            'grupo' => 'STFW_09_01',
             'email' => 'valeria.martinez@micorreo.upp.edu.mx',
             'password' => 'Password123',
             'password_confirmation' => 'Password123',
@@ -113,13 +113,13 @@ class DatosAlumnoTest extends TestCase
         $this->actingAs($alumno)->patch(route('profile.update'), [
             'name' => 'Ana Torres',
             'email' => 'ana.torres@upp.edu.mx',
-            'carrera' => 'Ingeniería en Redes y Telecomunicaciones',
+            'carrera' => 'Ingeniería en Tecnologías de la Información e Innovación Digital',
             'cuatrimestre' => 'Otro',
         ])->assertSessionHasNoErrors()->assertRedirect(route('profile.edit'));
 
         $alumno->refresh();
         $this->assertSame('Otro', $alumno->cuatrimestre);
-        $this->assertSame('Ingeniería en Redes y Telecomunicaciones', $alumno->carrera);
+        $this->assertSame('Ingeniería en Tecnologías de la Información e Innovación Digital', $alumno->carrera);
         $this->assertSame('regular', $alumno->estatus);
 
         // Y se puede volver a editar: al elegir «Irregular» cambia su situación
@@ -184,19 +184,5 @@ class DatosAlumnoTest extends TestCase
             'name' => 'Coordinación',
             'email' => 'coordinacion@gmail.com',
         ])->assertSessionHasNoErrors();
-    }
-
-    public function test_el_filtro_de_alumnos_del_tutor_acepta_otro(): void
-    {
-        $admin = User::factory()->create()->assignRole('admin');
-        $tutor = User::factory()->create()->assignRole('tutor');
-        $this->alumno(['name' => 'Ana Torres', 'cuatrimestre' => 'Otro']);
-        $this->alumno(['name' => 'Beto Ruiz', 'email' => 'beto@upp.edu.mx', 'matricula' => '2023000002', 'cuatrimestre' => '3']);
-
-        $this->actingAs($admin)
-            ->get(route('admin.tutors.students', ['tutor' => $tutor, 'cuatrimestre' => 'Otro']))
-            ->assertOk()
-            ->assertSee('Ana Torres')
-            ->assertDontSee('Beto Ruiz');
     }
 }
