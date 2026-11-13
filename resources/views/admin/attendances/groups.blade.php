@@ -94,7 +94,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
                     </svg>
                     <input type="search" name="q" value="{{ $search }}"
-                           placeholder="Buscar grupo, p. ej. sftw_01..."
+                           placeholder="Buscar grupo, p. ej. TIID_01..."
                            class="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-upp-primary-container">
                 </div>
 
@@ -220,7 +220,7 @@
         </div>
 
         <p class="px-4 lg:px-6 py-3 border-t border-upp-surface-high text-xs text-gray-500">
-            El código del grupo es carrera_grupo_cuatrimestre (p. ej. sftw_01_09). El alumno escribe solo el número de su grupo al registrarse o en «Mi perfil».
+            El código del grupo es carrera_cuatrimestre_grupo, como en la lista de la coordinación (p. ej. TIID_01_02 = 1er cuatrimestre, grupo 2). El alumno lo elige de la lista al registrarse o en «Mi perfil».
         </p>
 
     </div>

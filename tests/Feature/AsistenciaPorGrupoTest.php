@@ -99,7 +99,13 @@ class AsistenciaPorGrupoTest extends TestCase
         $respuesta = $this->actingAs($this->admin)->get(route('admin.attendances.groups'))->assertOk();
 
         $respuesta->assertSeeInOrder(['STFW_09_01', 'STFW_09_02', 'Sin grupo'])
-            ->assertSeeInOrder(['STFW_09_01', 'Software', '· Grupo 1 · 9°']);
+            ->assertSeeInOrder(['STFW_09_01', 'Software', '· Grupo 1 · 9°'])
+            // La ayuda explica la nomenclatura de la coordinación, no el formato anterior
+            ->assertSee('placeholder="Buscar grupo, p. ej. TIID_01..."', false)
+            ->assertSee('El código del grupo es carrera_cuatrimestre_grupo')
+            ->assertSee('El alumno lo elige de la lista')
+            ->assertDontSee('sftw_01')
+            ->assertDontSee('escribe solo el número');
 
         $grupos = collect($respuesta->viewData('grupos')->items())->keyBy('clave');
 
