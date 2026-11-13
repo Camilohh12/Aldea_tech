@@ -17,8 +17,8 @@ use Illuminate\Support\Str;
 /**
  * Asistencias por grupo (solo consulta, como la vista por taller).
  *
- * El grupo de cada alumno es el código que capturó (sftw_01_09) o, si su
- * cuatrimestre es «Irregular» u «Otro», el de su tutor (App\Support\Grupo).
+ * El grupo de cada alumno es el que eligió de la lista de la coordinación
+ * (TIID_01_02) o, si eligió «Irregular» u «Otro», el de su tutor (App\Support\Grupo).
  * Horas y estado con las mismas reglas que ve el tutor (ProgresoTutorado).
  */
 class AttendanceGroupController extends Controller

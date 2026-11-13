@@ -160,7 +160,7 @@ Route::middleware(['auth', 'role:admin|super_admin'])
         // Asistencias: el admin consulta (el responsable pasa lista)
         Route::get('/asistencias', [AttendanceController::class, 'index'])
             ->name('attendances.index');
-        // Por grupo (código sftw_01_09 o «sin-grupo»)
+        // Por grupo (código TIID_01_02 o «sin-grupo»)
         Route::get('/asistencias/grupos', [AttendanceGroupController::class, 'index'])
             ->name('attendances.groups');
         Route::get('/asistencias/grupos/csv', [AttendanceGroupController::class, 'exportSummary'])
