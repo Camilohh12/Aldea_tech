@@ -46,6 +46,7 @@
             <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
                 <a href="#inicio" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10 hover:text-white">Inicio</a>
                 <a href="#catalogo" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10 hover:text-white">Catálogo</a>
+                <a href="{{ route('cronograma') }}" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10 hover:text-white">Cronograma</a>
                 <a href="#accesos" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10 hover:text-white">Accesos</a>
             </nav>
 
@@ -102,6 +103,10 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                             </svg>
+                        </a>
+                        <a href="{{ route('cronograma') }}"
+                           class="inline-flex items-center justify-center gap-2 bg-white hover:bg-upp-surface-low text-upp-primary-container px-6 py-3.5 rounded-lg font-semibold ring-1 ring-upp-surface-high transition">
+                            Cronograma por día
                         </a>
                         <a href="#accesos"
                            class="inline-flex items-center justify-center gap-2 bg-white hover:bg-upp-surface-low text-upp-primary-container px-6 py-3.5 rounded-lg font-semibold ring-1 ring-upp-surface-high transition">
@@ -376,6 +381,7 @@
             </div>
             <nav class="flex flex-wrap gap-4 text-sm text-white/80">
                 <a href="#catalogo" class="hover:text-white">Catálogo</a>
+                <a href="{{ route('cronograma') }}" class="hover:text-white">Cronograma</a>
                 <a href="#accesos" class="hover:text-white">Accesos</a>
                 <a href="{{ route('login') }}" class="hover:text-white">Iniciar sesión</a>
             </nav>
